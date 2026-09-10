@@ -1,0 +1,21 @@
+node_modules/
+dist/
+web/dist/
+.wrangler/
+.dev.vars
+*.db
+*.db-*
+data/
+.env
+.env.*
+coverage/
+.DS_Store
+
+# private / local-only planning context (never tracked)
+CLAUDE.md
+CPETracker/
+imports/
+/*.csv
+*.backup.zip
+.claude/settings.local.json
+gitleaks-report.*
