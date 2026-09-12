@@ -10,6 +10,7 @@ import { Activities } from './routes/activities';
 import { FanoutPage } from './routes/fanout';
 import { CyclePage } from './routes/cycle';
 import { ImportPage } from './routes/import';
+import { AddEvidencePage } from './components/evidence';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="activities/:id" element={<FanoutPage />} />
               <Route path="cycles/:id" element={<CyclePage />} />
               <Route path="import" element={<ImportPage />} />
+              <Route path="evidence" element={<AddEvidencePage />} />
               <Route path="*" element={<Dashboard />} />
             </Route>
           </Routes>

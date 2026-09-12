@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
 import { api, fmtCredits } from '@/lib/api';
 import type { Fanout, Held, Standing } from '@/lib/types';
-import { Badge, Button, Card, ErrorText, Input } from '@/components/ui';
+import { Badge, Button, Card, ErrorText, Field, Input, Select } from '@/components/ui';
+import { EvidenceList, EvidenceUpload } from '@/components/evidence';
+import type { ActivityType } from '@/lib/types';
 
 interface Row {
   heldCertId: string;
@@ -27,7 +29,35 @@ export function FanoutPage() {
     queryFn: () => api<Fanout>(`/api/activities/${id}/fanout`),
   });
   const held = useQuery({ queryKey: ['held'], queryFn: () => api<Held[]>('/api/held') });
+  const types = useQuery({
+    queryKey: ['activity-types'],
+    queryFn: () => api<ActivityType[]>('/api/catalog/activity-types'),
+  });
   const [rows, setRows] = useState<Row[]>([]);
+  const [edit, setEdit] = useState<{
+    title: string;
+    occurredOn: string;
+    activityType: string;
+    provider: string;
+    durationMinutes: string;
+  } | null>(null);
+  const save = useMutation({
+    mutationFn: () =>
+      api(`/api/activities/${id}`, {
+        method: 'PUT',
+        body: {
+          title: edit!.title,
+          occurredOn: edit!.occurredOn,
+          activityType: edit!.activityType,
+          provider: edit!.provider,
+          ...(edit!.durationMinutes && { durationMinutes: Number(edit!.durationMinutes) }),
+        },
+      }),
+    onSuccess: () => {
+      setEdit(null);
+      qc.invalidateQueries();
+    },
+  });
   const [showCovered, setShowCovered] = useState(false);
   const abbr = (heldId: string) =>
     held.data?.find((h) => h.id === heldId)?.certification.abbreviation ?? heldId;
@@ -112,6 +142,100 @@ export function FanoutPage() {
           <Link to="/activities" className="ml-auto text-xs underline">
             back
           </Link>
+        </div>
+      </Card>
+      {a.status === 'draft' && (
+        <Card>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <h3 className="font-semibold">Draft details</h3>
+            {extractedFields(a).length > 0 && (
+              <Badge tone="ok">from document: {extractedFields(a).join(', ')}</Badge>
+            )}
+            {!edit && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="ml-auto"
+                onClick={() =>
+                  setEdit({
+                    title: a.title,
+                    occurredOn: a.occurredOn,
+                    activityType: a.activityType,
+                    provider: a.provider ?? '',
+                    durationMinutes: a.durationMinutes ? String(a.durationMinutes) : '',
+                  })
+                }
+              >
+                Edit
+              </Button>
+            )}
+          </div>
+          {edit ? (
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Field label="Title">
+                <Input
+                  value={edit.title}
+                  onChange={(e) => setEdit({ ...edit, title: e.target.value })}
+                />
+              </Field>
+              <Field label="Type">
+                <Select
+                  value={edit.activityType}
+                  onChange={(e) => setEdit({ ...edit, activityType: e.target.value })}
+                >
+                  {types.data?.map((t) => (
+                    <option key={t.key} value={t.key}>
+                      {t.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Date">
+                <Input
+                  type="date"
+                  value={edit.occurredOn}
+                  onChange={(e) => setEdit({ ...edit, occurredOn: e.target.value })}
+                />
+              </Field>
+              <Field label="Minutes">
+                <Input
+                  type="number"
+                  value={edit.durationMinutes}
+                  onChange={(e) => setEdit({ ...edit, durationMinutes: e.target.value })}
+                />
+              </Field>
+              <Field label="Provider">
+                <Input
+                  value={edit.provider}
+                  onChange={(e) => setEdit({ ...edit, provider: e.target.value })}
+                />
+              </Field>
+              <div className="flex items-end gap-2">
+                <Button onClick={() => save.mutate()} disabled={save.isPending}>
+                  Save
+                </Button>
+                <Button variant="ghost" onClick={() => setEdit(null)}>
+                  Cancel
+                </Button>
+              </div>
+              <ErrorText error={save.error} />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {a.provider ? `${a.provider} · ` : ''}
+              {a.description
+                ?.split('\n')
+                .filter((l) => !l.startsWith('extracted:') && !l.startsWith('related:'))
+                .join(' · ')}
+            </p>
+          )}
+        </Card>
+      )}
+      <Card>
+        <h3 className="mb-2 font-semibold">Evidence</h3>
+        <EvidenceList activityId={id} />
+        <div className="mt-2">
+          <EvidenceUpload activityId={id} />
         </div>
       </Card>
       <Card>
@@ -250,4 +374,9 @@ export function FanoutPage() {
       </Card>
     </div>
   );
+}
+
+function extractedFields(a: { description: string | null }): string[] {
+  const m = a.description?.match(/^extracted:(.+)$/m);
+  return m ? m[1]!.split(',') : [];
 }

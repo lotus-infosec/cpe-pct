@@ -12,6 +12,11 @@ import { cycles } from './routes/cycles';
 import { payments } from './routes/payments';
 import { importRoute } from './routes/import';
 import { dashboard } from './routes/dashboard';
+import { activityEvidenceRoute, evidence } from './routes/evidence';
+import { jobsRoute } from './routes/jobs';
+import { runDueJobs } from '../adapters/shared/db-job-queue';
+import { jobHandlers } from './jobs/extract-text';
+import type { TickBudget } from '../ports';
 
 export type { AppContext } from './context';
 export type App = ReturnType<typeof createApp>;
@@ -60,6 +65,9 @@ export function createApp(ctx: AppContext) {
   app.route('/api/payments', payments);
   app.route('/api/import', importRoute);
   app.route('/api/dashboard', dashboard);
+  app.route('/api/evidence', evidence);
+  app.route('/api/activities', activityEvidenceRoute);
+  app.route('/api/jobs', jobsRoute);
 
   app.notFound((c) => c.json({ error: 'not_found' }, 404));
   app.onError((err, c) => {
@@ -69,4 +77,9 @@ export function createApp(ctx: AppContext) {
   });
 
   return app;
+}
+
+/** The one job runner, called by IntervalTickSource (Node) and scheduled() (Workers). */
+export function tick(ctx: AppContext, budget: TickBudget) {
+  return runDueJobs(ctx.db, ctx.clock, jobHandlers(ctx), budget);
 }

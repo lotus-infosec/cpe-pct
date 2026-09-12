@@ -1,8 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { createApp } from '../../src/app';
-import { openNodeDb } from '../../src/adapters/node/db';
-import { LocalAuth } from '../../src/adapters/shared/local-auth';
+import type { createApp } from '../../src/app';
 import type { Clock } from '../../src/ports';
+import { testApp } from './app';
 
 // Fixed clock so cycle arithmetic is deterministic. Synthetic cert numbers only.
 const clock: Clock = { now: () => new Date('2026-09-11T12:00:00Z') };
@@ -36,8 +35,7 @@ const call = async (
 };
 
 beforeAll(async () => {
-  const db = await openNodeDb(':memory:', { migrationsFolder: 'src/db/migrations' });
-  app = createApp({ db, clock, auth: new LocalAuth(db, clock) });
+  app = (await testApp(clock)).app;
 });
 
 describe('setup and auth', () => {
