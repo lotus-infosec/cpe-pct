@@ -49,6 +49,8 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm run db:check
+      # Catalog: every body file validates and no released body@version changed (lock.json).
+      - run: npm run catalog:check
       # Schema and migrations must agree: generating again must be a no-op.
       - run: |
           npm run db:generate
