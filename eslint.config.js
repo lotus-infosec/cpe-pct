@@ -47,6 +47,11 @@ export default tseslint.config(
     },
   },
   {
+    // Tests assert on loose JSON; `any` is acceptable there and nowhere else.
+    files: ['test/**/*.ts'],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+  },
+  {
     // Declaration files merge into globals and may not have top-level imports; import() types are the tool.
     files: ['**/*.d.ts'],
     rules: { '@typescript-eslint/consistent-type-imports': 'off' },

@@ -1,0 +1,673 @@
+# CompTIA — parameters only, transcribed from the cited pages. No prose.
+schema: 1
+
+body:
+  id: comptia
+  name: CompTIA
+  website: https://www.comptia.org
+  fee_scope: certification # CE fee per certification per 3-year cycle; only the highest-level cert's fee is paid
+
+certifications:
+  - {
+      id: comptia/a-plus,
+      name: CompTIA A+,
+      abbreviation: A+,
+      credit_unit_label: CEU,
+      expires: true,
+    }
+  - {
+      id: comptia/network-plus,
+      name: CompTIA Network+,
+      abbreviation: Network+,
+      credit_unit_label: CEU,
+      expires: true,
+    }
+  - {
+      id: comptia/security-plus,
+      name: CompTIA Security+,
+      abbreviation: Security+,
+      credit_unit_label: CEU,
+      expires: true,
+    }
+  - {
+      id: comptia/cysa-plus,
+      name: CompTIA CySA+,
+      abbreviation: CySA+,
+      credit_unit_label: CEU,
+      expires: true,
+    }
+  - {
+      id: comptia/pentest-plus,
+      name: CompTIA PenTest+,
+      abbreviation: PenTest+,
+      credit_unit_label: CEU,
+      expires: true,
+    }
+  - {
+      id: comptia/securityx,
+      name: CompTIA SecurityX,
+      abbreviation: SecurityX,
+      credit_unit_label: CEU,
+      expires: true,
+    }
+  - {
+      id: comptia/csap,
+      name: CompTIA Security Analytics Professional (stackable),
+      abbreviation: CSAP,
+      credit_unit_label: CEU,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2026-01-01
+    verified_on: 2026-09-11
+    sources:
+      - url: https://www.comptia.org/en-us/resources/ce/learn/earn-continuing-education-units-ceus/
+        title: CompTIA CE — Earn Continuing Education Units (CEUs)
+        retrieved_on: 2026-09-11
+        pointer: 'CEUs required per certification; 50% relevance rule'
+      - url: https://www.comptia.org/en-us/resources/ce/learn/continuing-education-renewal-fees/
+        title: CompTIA CE — Renewal fees
+        retrieved_on: 2026-09-11
+        pointer: '$75 / $150 per 3-year period; only highest-level cert fee; due by expiration; not annual'
+      - url: https://www.comptia.org/en-us/resources/ce/choose/renewing-with-multiple-activities/training-and-higher-education/
+        title: CompTIA CE — Training and higher education
+        retrieved_on: 2026-09-11
+        pointer: '1 CEU per hour; 10 CEUs per 3-4 credit-hour class; per-cert maxima table'
+      - url: https://www.comptia.org/en-us/resources/ce/choose/renewing-with-multiple-activities/it-industry-participation/
+        title: CompTIA CE — IT industry participation
+        retrieved_on: 2026-09-11
+        pointer: 'teach/mentor 1 per hour; instructional materials 2 per hour; per-cert maxima table'
+      - url: https://www.comptia.org/en-us/resources/ce/choose/renewing-with-multiple-activities/publishing/
+        title: CompTIA CE — Publishing
+        retrieved_on: 2026-09-11
+        pointer: 'article/white paper 4 each; blog 1 each; book = table value; per-cert maxima table'
+      - url: https://www.comptia.org/en-us/resources/ce/choose/renew-with-a-single-activity/earn-a-higher-level-comptia-certification/
+        title: CompTIA CE — Earn a higher-level CompTIA certification
+        retrieved_on: 2026-09-11
+        pointer: "'Fully renews' chart"
+      - url: https://www.comptia.org/en-us/resources/ce/renew-options/renewing-security-single/
+        title: CompTIA CE — Renewing Security+ with a single non-CompTIA certification
+        retrieved_on: 2026-09-11
+        pointer: 'CISSP, SSCP, ECIH, CEH ... = 50 CEUs (full renewal)'
+      - url: https://www.comptia.org/en-us/resources/ce/renew-options/renewing-cysa-single/
+        title: CompTIA CE — Renewing CySA+ with a single non-CompTIA certification
+        retrieved_on: 2026-09-11
+        pointer: 'CISSP, SSCP, CGRC, ECIH ... = 60 CEUs (full renewal)'
+      - url: https://www.comptia.org/en-us/resources/ce/learn/comptia-continuing-education-program-faq/
+        title: CompTIA CE Program FAQ
+        retrieved_on: 2026-09-11
+        pointer: 'renewing the highest-level cert automatically renews lower-level certs; fees only for highest'
+    notes: >-
+      No annual minimum. CE fee is per 3-year cycle, due by the expiration date (encoded period_months 36);
+      covered_by_higher_cert reflects 'only pay for your highest-level certification'. Hours-to-CEU is
+      '1 CEU per hour' with no statement on fractions; rounding encoded exact (VERIFY C-item: check portal).
+      Blog posts (1 CEU) and work experience (3 CEUs/yr) have no canonical activity type and are not encoded.
+      CSAP (stackable) has no CE of its own; modelled as requires_current on Security+ and CySA+
+      (secondary sources only — CompTIA's stackables page does not state renewal rules; VERIFY B2).
+      credits_flow_down mirrors 'renewing the highest cert renews the lower ones'; portal behaviour
+      of CEUs cascading is VERIFY C2.
+
+    categories: []
+
+    requirements:
+      - {
+          certification: comptia/a-plus,
+          cycle_months: 36,
+          total_credits: 20,
+          fee: { amount: 75.00, currency: USD, period_months: 36, covered_by_higher_cert: true },
+        }
+      - {
+          certification: comptia/network-plus,
+          cycle_months: 36,
+          total_credits: 30,
+          fee: { amount: 150.00, currency: USD, period_months: 36, covered_by_higher_cert: true },
+        }
+      - {
+          certification: comptia/security-plus,
+          cycle_months: 36,
+          total_credits: 50,
+          fee: { amount: 150.00, currency: USD, period_months: 36, covered_by_higher_cert: true },
+        }
+      - {
+          certification: comptia/cysa-plus,
+          cycle_months: 36,
+          total_credits: 60,
+          fee: { amount: 150.00, currency: USD, period_months: 36, covered_by_higher_cert: true },
+        }
+      - {
+          certification: comptia/pentest-plus,
+          cycle_months: 36,
+          total_credits: 60,
+          fee: { amount: 150.00, currency: USD, period_months: 36, covered_by_higher_cert: true },
+        }
+      - {
+          certification: comptia/securityx,
+          cycle_months: 36,
+          total_credits: 75,
+          fee: { amount: 150.00, currency: USD, period_months: 36, covered_by_higher_cert: true },
+        }
+
+    crediting:
+      # Training: 1 CEU per hour, capped at the cert's total.
+      - {
+          activity_type: attend_training,
+          body_label: 'Complete a training course',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 20,
+          applies_to: comptia/a-plus,
+        }
+      - {
+          activity_type: attend_training,
+          body_label: 'Complete a training course',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 30,
+          applies_to: comptia/network-plus,
+        }
+      - {
+          activity_type: attend_training,
+          body_label: 'Complete a training course',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 50,
+          applies_to: comptia/security-plus,
+        }
+      - {
+          activity_type: attend_training,
+          body_label: 'Complete a training course',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 60,
+          applies_to: comptia/cysa-plus,
+        }
+      - {
+          activity_type: attend_training,
+          body_label: 'Complete a training course',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 60,
+          applies_to: comptia/pentest-plus,
+        }
+      - {
+          activity_type: attend_training,
+          body_label: 'Complete a training course',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 75,
+          applies_to: comptia/securityx,
+        }
+      # Webinars and conferences: 1 CEU per hour, small caps.
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Attend a live webinar',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 4,
+          applies_to: comptia/a-plus,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Attend a live webinar',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 6,
+          applies_to: comptia/network-plus,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Attend a live webinar',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 10,
+          applies_to: comptia/security-plus,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Attend a live webinar',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 15,
+          applies_to: comptia/cysa-plus,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Attend a live webinar',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 15,
+          applies_to: comptia/pentest-plus,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Attend a live webinar',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 20,
+          applies_to: comptia/securityx,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Attend a conference',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 4,
+          applies_to: comptia/a-plus,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Attend a conference',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 6,
+          applies_to: comptia/network-plus,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Attend a conference',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 10,
+          applies_to: comptia/security-plus,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Attend a conference',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 15,
+          applies_to: comptia/cysa-plus,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Attend a conference',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 15,
+          applies_to: comptia/pentest-plus,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Attend a conference',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 20,
+          applies_to: comptia/securityx,
+        }
+      # College course: 10 CEUs per 3-4 credit-hour class (item = class), capped at the cert's total.
+      - {
+          activity_type: higher_education,
+          body_label: 'Complete a college course',
+          basis: per_item,
+          credits_per_item: 10,
+          cap_per_cycle: 20,
+          applies_to: comptia/a-plus,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Complete a college course',
+          basis: per_item,
+          credits_per_item: 10,
+          cap_per_cycle: 30,
+          applies_to: comptia/network-plus,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Complete a college course',
+          basis: per_item,
+          credits_per_item: 10,
+          cap_per_cycle: 50,
+          applies_to: comptia/security-plus,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Complete a college course',
+          basis: per_item,
+          credits_per_item: 10,
+          cap_per_cycle: 60,
+          applies_to: comptia/cysa-plus,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Complete a college course',
+          basis: per_item,
+          credits_per_item: 10,
+          cap_per_cycle: 60,
+          applies_to: comptia/pentest-plus,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Complete a college course',
+          basis: per_item,
+          credits_per_item: 10,
+          cap_per_cycle: 75,
+          applies_to: comptia/securityx,
+        }
+      # Teach or mentor: 1 CEU per hour.
+      - {
+          activity_type: mentor,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 10,
+          applies_to: comptia/a-plus,
+        }
+      - {
+          activity_type: mentor,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 15,
+          applies_to: comptia/network-plus,
+        }
+      - {
+          activity_type: mentor,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 20,
+          applies_to: comptia/security-plus,
+        }
+      - {
+          activity_type: mentor,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 30,
+          applies_to: comptia/cysa-plus,
+        }
+      - {
+          activity_type: mentor,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 30,
+          applies_to: comptia/pentest-plus,
+        }
+      - {
+          activity_type: mentor,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 40,
+          applies_to: comptia/securityx,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 10,
+          applies_to: comptia/a-plus,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 15,
+          applies_to: comptia/network-plus,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 20,
+          applies_to: comptia/security-plus,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 30,
+          applies_to: comptia/cysa-plus,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 30,
+          applies_to: comptia/pentest-plus,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Teach or mentor',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 40,
+          applies_to: comptia/securityx,
+        }
+      # Instructional materials: 2 CEUs per hour (30 minutes per CEU).
+      - {
+          activity_type: develop_content,
+          body_label: 'Create instructional materials',
+          basis: per_minutes,
+          minutes_per_credit: 30,
+          rounding: exact,
+          cap_per_cycle: 10,
+          applies_to: comptia/a-plus,
+        }
+      - {
+          activity_type: develop_content,
+          body_label: 'Create instructional materials',
+          basis: per_minutes,
+          minutes_per_credit: 30,
+          rounding: exact,
+          cap_per_cycle: 15,
+          applies_to: comptia/network-plus,
+        }
+      - {
+          activity_type: develop_content,
+          body_label: 'Create instructional materials',
+          basis: per_minutes,
+          minutes_per_credit: 30,
+          rounding: exact,
+          cap_per_cycle: 20,
+          applies_to: comptia/security-plus,
+        }
+      - {
+          activity_type: develop_content,
+          body_label: 'Create instructional materials',
+          basis: per_minutes,
+          minutes_per_credit: 30,
+          rounding: exact,
+          cap_per_cycle: 30,
+          applies_to: comptia/cysa-plus,
+        }
+      - {
+          activity_type: develop_content,
+          body_label: 'Create instructional materials',
+          basis: per_minutes,
+          minutes_per_credit: 30,
+          rounding: exact,
+          cap_per_cycle: 30,
+          applies_to: comptia/pentest-plus,
+        }
+      - {
+          activity_type: develop_content,
+          body_label: 'Create instructional materials',
+          basis: per_minutes,
+          minutes_per_credit: 30,
+          rounding: exact,
+          cap_per_cycle: 40,
+          applies_to: comptia/securityx,
+        }
+      # Publishing: article/white paper 4 each; book = the table value.
+      - {
+          activity_type: publish_article,
+          body_label: 'Publish an article or white paper',
+          basis: per_item,
+          credits_per_item: 4,
+          cap_per_cycle: 8,
+          applies_to: comptia/a-plus,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Publish an article or white paper',
+          basis: per_item,
+          credits_per_item: 4,
+          cap_per_cycle: 12,
+          applies_to: comptia/network-plus,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Publish an article or white paper',
+          basis: per_item,
+          credits_per_item: 4,
+          cap_per_cycle: 16,
+          applies_to: comptia/security-plus,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Publish an article or white paper',
+          basis: per_item,
+          credits_per_item: 4,
+          cap_per_cycle: 18,
+          applies_to: comptia/cysa-plus,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Publish an article or white paper',
+          basis: per_item,
+          credits_per_item: 4,
+          cap_per_cycle: 18,
+          applies_to: comptia/pentest-plus,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Publish an article or white paper',
+          basis: per_item,
+          credits_per_item: 4,
+          cap_per_cycle: 20,
+          applies_to: comptia/securityx,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Publish a book',
+          basis: per_item,
+          credits_per_item: 15,
+          cap_per_cycle: 15,
+          applies_to: comptia/a-plus,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Publish a book',
+          basis: per_item,
+          credits_per_item: 20,
+          cap_per_cycle: 20,
+          applies_to: comptia/network-plus,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Publish a book',
+          basis: per_item,
+          credits_per_item: 40,
+          cap_per_cycle: 40,
+          applies_to: comptia/security-plus,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Publish a book',
+          basis: per_item,
+          credits_per_item: 50,
+          cap_per_cycle: 50,
+          applies_to: comptia/cysa-plus,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Publish a book',
+          basis: per_item,
+          credits_per_item: 50,
+          cap_per_cycle: 50,
+          applies_to: comptia/pentest-plus,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Publish a book',
+          basis: per_item,
+          credits_per_item: 60,
+          cap_per_cycle: 60,
+          applies_to: comptia/securityx,
+        }
+
+    constraints:
+      - { type: cycle_total }
+      - { type: fee_paid }
+      - {
+          type: prerequisite_current,
+          params: { certification: comptia/security-plus },
+          applies_to: comptia/csap,
+        }
+      - {
+          type: prerequisite_current,
+          params: { certification: comptia/cysa-plus },
+          applies_to: comptia/csap,
+        }
+
+    relations:
+      # "Fully renews" chart (earning the higher cert renews the lower ones).
+      - { from: comptia/securityx, to: comptia/cysa-plus, relation: earning_renews }
+      - { from: comptia/securityx, to: comptia/pentest-plus, relation: earning_renews }
+      - { from: comptia/securityx, to: comptia/security-plus, relation: earning_renews }
+      - { from: comptia/securityx, to: comptia/network-plus, relation: earning_renews }
+      - { from: comptia/securityx, to: comptia/a-plus, relation: earning_renews }
+      - { from: comptia/cysa-plus, to: comptia/security-plus, relation: earning_renews }
+      - { from: comptia/cysa-plus, to: comptia/network-plus, relation: earning_renews }
+      - { from: comptia/cysa-plus, to: comptia/a-plus, relation: earning_renews }
+      - { from: comptia/pentest-plus, to: comptia/security-plus, relation: earning_renews }
+      - { from: comptia/pentest-plus, to: comptia/network-plus, relation: earning_renews }
+      - { from: comptia/pentest-plus, to: comptia/a-plus, relation: earning_renews }
+      - { from: comptia/security-plus, to: comptia/network-plus, relation: earning_renews }
+      - { from: comptia/security-plus, to: comptia/a-plus, relation: earning_renews }
+      - { from: comptia/network-plus, to: comptia/a-plus, relation: earning_renews }
+      # Renewing the highest-level cert renews the lower ones (FAQ); CEU cascade in the portal is VERIFY C2.
+      - { from: comptia/securityx, to: comptia/cysa-plus, relation: credits_flow_down }
+      - { from: comptia/securityx, to: comptia/security-plus, relation: credits_flow_down }
+      - { from: comptia/cysa-plus, to: comptia/security-plus, relation: credits_flow_down }
+      - { from: comptia/cysa-plus, to: comptia/network-plus, relation: credits_flow_down }
+      - { from: comptia/cysa-plus, to: comptia/a-plus, relation: credits_flow_down }
+      - { from: comptia/security-plus, to: comptia/network-plus, relation: credits_flow_down }
+      - { from: comptia/security-plus, to: comptia/a-plus, relation: credits_flow_down }
+      # Non-CompTIA certifications that fully renew (single-activity lists).
+      - { from: isc2/cissp, to: comptia/security-plus, relation: earning_renews }
+      - { from: isc2/cissp, to: comptia/cysa-plus, relation: earning_renews }
+      - { from: ec-council/ecih, to: comptia/security-plus, relation: earning_renews }
+      - { from: ec-council/ecih, to: comptia/cysa-plus, relation: earning_renews }
+      # Stackable: valid while components are current.
+      - { from: comptia/security-plus, to: comptia/csap, relation: requires_current }
+      - { from: comptia/cysa-plus, to: comptia/csap, relation: requires_current }

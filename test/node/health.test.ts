@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createApp } from '../../src/app';
 import { openNodeDb } from '../../src/adapters/node/db';
 import { systemClock } from '../../src/adapters/shared/clock';
+import { testApp } from './app';
 
 describe('GET /api/health (node + libSQL in-memory)', () => {
   it('increments across calls', async () => {
-    const db = await openNodeDb(':memory:', { migrationsFolder: 'src/db/migrations' });
-    const app = createApp({ db, clock: systemClock });
+    const { app } = await testApp(systemClock);
     const call = async () => {
       const res = await app.request('/api/health');
       expect(res.status).toBe(200);

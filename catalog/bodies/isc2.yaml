@@ -1,0 +1,187 @@
+# ISC2 — parameters only, transcribed from the cited documents. No handbook prose.
+schema: 1
+
+body:
+  id: isc2
+  name: ISC2
+  website: https://www.isc2.org
+  fee_scope: membership # one AMF covers every ISC2 certification a member holds
+
+certifications:
+  - id: isc2/cissp
+    name: Certified Information Systems Security Professional
+    abbreviation: CISSP
+    credit_unit_label: CPE
+    expires: true
+  - id: isc2/cc
+    name: Certified in Cybersecurity
+    abbreviation: CC
+    credit_unit_label: CPE
+    expires: true
+
+versions:
+  - version: 1
+    effective_from: 2023-01-01
+    verified_on: 2026-09-11
+    sources:
+      - url: https://www.isc2.org/-/media/Project/ISC2/Main/Media/documents/members/CPE-Handbook-2023.pdf
+        title: ISC2 Certification Maintenance Handbook (CPE Handbook)
+        retrieved_on: 2026-09-11
+        sha256: c22a8d74b565396994993a0a6eff76ae7614868a68a715bab0061816d875b477
+        pointer: 'p.5 requirements table; p.7 calculating credits; p.11-13 activity maxima; p.3 AMF'
+      - url: https://www.isc2.org/policies-procedures/member-policies
+        title: ISC2 Member Policies, §4.1 CPE Maintenance Requirement (v7.0)
+        retrieved_on: 2026-09-11
+        pointer: "§4.1.1 table 'Suggested Annually / Required 3-Year Total'; 90-day grace"
+      - url: https://www.isc2.org/policies-procedures/amfs-overview
+        title: ISC2 Annual Maintenance Fees (AMF) FAQ
+        retrieved_on: 2026-09-11
+        pointer: 'AMF amounts; single AMF regardless of certifications held; due on anniversary'
+    notes: >-
+      Annual minimum is SUGGESTED (handbook p.5: no annual requirement for members) — encoded soft.
+      Time-based credit is 1 per hour reportable in 0.25 increments; direction of rounding is not
+      stated, floor_quarter chosen as the conservative reading (VERIFY C3). Single-activity cap is 40.
+      Group B does not apply to CC. Mentoring is not a listed activity and is not encoded.
+      CPEs are earned in a 90-day grace period after cycle end; the app does not model grace yet.
+      AMF for CC-only members is $50 (fee_params.cc_only_amount).
+
+    categories:
+      - key: A
+        name: Group A (domain-related)
+      - key: B
+        name: Group B (professional development)
+
+    requirements:
+      - certification: isc2/cissp
+        cycle_months: 36
+        total_credits: 120
+        annual_min: 40
+        annual_min_severity: soft
+        fee: { amount: 135.00, currency: USD, period_months: 12 }
+      - certification: isc2/cc
+        cycle_months: 36
+        total_credits: 45
+        annual_min: 15
+        annual_min_severity: soft
+        fee: { amount: 50.00, currency: USD, period_months: 12 }
+
+    crediting:
+      - {
+          activity_type: attend_training,
+          body_label: 'Courses and seminars - other',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: A,
+          cap_per_item: 40,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Industry conference',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: A,
+          cap_per_item: 40,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Online webinars, podcasts and other online materials',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: A,
+          cap_per_item: 40,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Higher education course',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: A,
+          cap_per_item: 40,
+        }
+      - {
+          activity_type: self_study_timed,
+          body_label: 'Self-study (research / exam preparation)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: A,
+          cap_per_item: 40,
+        }
+      - {
+          activity_type: read_book,
+          body_label: 'Self-directed learning: books',
+          basis: per_item,
+          credits_per_item: 5,
+          category: A,
+        }
+      - {
+          activity_type: read_article,
+          body_label: 'Self-directed learning: magazines',
+          basis: per_item,
+          credits_per_item: 5,
+          category: A,
+        }
+      - {
+          activity_type: deliver_presentation,
+          body_label: 'Preparation for presentation/lecture/training',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: A,
+          cap_per_item: 40,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Preparing training (per course, 2-20 by length)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: A,
+          cap_per_item: 20,
+        }
+      - {
+          activity_type: develop_content,
+          body_label: 'Preparing new or updating training material',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: A,
+          cap_per_item: 40,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Article - author',
+          basis: per_item,
+          credits_per_item: 20,
+          category: A,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Book - author',
+          basis: per_item,
+          credits_per_item: 40,
+          category: A,
+        }
+      - {
+          activity_type: volunteer,
+          body_label: 'Volunteer activities / committees',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: B,
+          cap_per_item: 40,
+        }
+
+    constraints:
+      - { type: cycle_total }
+      - { type: annual_min, severity: soft }
+      - { type: category_min, params: { category: A, min: 90 }, applies_to: isc2/cissp }
+      - { type: category_max, params: { category: B, max: 30 }, applies_to: isc2/cissp }
+      - { type: category_max, params: { category: B, max: 0 }, applies_to: isc2/cc }
+      - { type: fee_paid }
+
+    relations: []
