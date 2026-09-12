@@ -7,6 +7,7 @@ import path from 'node:path';
 import { createApp } from './app';
 import { openNodeDb } from './adapters/node/db';
 import { systemClock } from './adapters/shared/clock';
+import { LocalAuth } from './adapters/shared/local-auth';
 
 const DATA_DIR = process.env['DATA_DIR'] ?? './data';
 const PORT = Number(process.env['PORT'] ?? 8787);
@@ -17,7 +18,7 @@ await mkdir(DATA_DIR, { recursive: true });
 const db = await openNodeDb(path.join(DATA_DIR, 'app.db'), { migrationsFolder: MIGRATIONS });
 
 const root = new Hono();
-root.route('/', createApp({ db, clock: systemClock }));
+root.route('/', createApp({ db, clock: systemClock, auth: new LocalAuth(db, systemClock) }));
 // A mounted sub-app's notFound does not apply here; keep unknown API paths out of the SPA fallback.
 root.all('/api/*', (c) => c.json({ error: 'not_found' }, 404));
 // Static SPA with deep-link fallback: unknown non-API paths get index.html (mirrors CF assets).

@@ -3,12 +3,14 @@
 import { createApp } from './app';
 import { openD1 } from './adapters/cloudflare/db';
 import { systemClock } from './adapters/shared/clock';
+import { LocalAuth } from './adapters/shared/local-auth';
 
 // `Env` is generated into worker-configuration.d.ts by `wrangler types` from wrangler.jsonc.
 
 export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
-    const app = createApp({ db: openD1(env.DB), clock: systemClock });
+    const db = openD1(env.DB);
+    const app = createApp({ db, clock: systemClock, auth: new LocalAuth(db, systemClock) });
     return app.fetch(request, env);
   },
   async scheduled(

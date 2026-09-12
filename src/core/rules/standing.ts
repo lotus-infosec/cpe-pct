@@ -79,8 +79,12 @@ export function standing(cycle: Cycle, ctx: StandingContext): Standing {
   const results = applicable.map((c) =>
     evaluate(c, cycle, ctx, counted, req?.totalCreditsX100 ?? 0, totals),
   );
+  // Failing first; among failing, overdue first; among those, hard before soft.
   results.sort(
-    (a, b) => Number(a.satisfied) - Number(b.satisfied) || Number(b.overdue) - Number(a.overdue),
+    (a, b) =>
+      Number(a.satisfied) - Number(b.satisfied) ||
+      Number(b.overdue) - Number(a.overdue) ||
+      Number(a.severity === 'soft') - Number(b.severity === 'soft'),
   );
   const compliant = results.every((r) => r.severity === 'soft' || r.satisfied || !r.overdue);
 
