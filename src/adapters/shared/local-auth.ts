@@ -12,7 +12,8 @@ export const PBKDF2_ITERATIONS = 210_000;
 
 const enc = new TextEncoder();
 const b64 = (u8: Uint8Array) => btoa(String.fromCharCode(...u8));
-const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const unb64 = (s: string): Uint8Array<ArrayBuffer> =>
+  Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 const hex = (u8: Uint8Array) => [...u8].map((b) => b.toString(16).padStart(2, '0')).join('');
 
 export async function hashPassword(
@@ -31,7 +32,11 @@ export async function verifyPassword(password: string, stored: string): Promise<
   return timingSafeEqual(bits, unb64(hash));
 }
 
-async function derive(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
+async function derive(
+  password: string,
+  salt: Uint8Array<ArrayBuffer>,
+  iterations: number,
+): Promise<Uint8Array> {
   const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, [
     'deriveBits',
   ]);
