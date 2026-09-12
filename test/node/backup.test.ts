@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import { createApp } from '../../src/app';
+import { createApp, tick } from '../../src/app';
 import * as s from '../../src/db/schema';
+import { applyDump, snapshot, wipe } from '../../src/app/backup';
 import { testContext } from './app';
 import { seedOwnerWorld } from '../seed-world';
 import expected from '../fixtures/world-checksums.json';
@@ -160,6 +161,27 @@ describe('backup → fresh instance → restore → verify', () => {
       (await b.call('/api/backup/restore', { method: 'POST', body: forced, cookie: bc })).status,
     ).toBe(201);
   });
+  it('a row written after the wipe does not abort the restore', async () => {
+    // D1 has no interactive transaction, so nothing holds the wipe against a concurrent writer.
+    // On Workers the every-minute cron re-seeds the recurring renewal_scan as soon as the jobs
+    // table is empty, and that row carries the same idempotency_key as the one in the dump.
+    const a = await instance();
+    await a.call('/api/setup', json({ password: PW }));
+    await seedOwnerWorld(a.ctx.db, clock.now().toISOString());
+    await tick(a.ctx, { maxJobs: 5, softDeadlineMs: 5000 });
+    const source = (await a.ctx.db.select().from(s.jobs).all()).find((j) => j.idempotencyKey)!;
+    const { dump } = await snapshot(a.ctx, 'node');
+
+    const b = await instance();
+    await wipe(b.ctx);
+    await b.ctx.db.insert(s.jobs).values({ ...source, id: 'written-after-the-wipe' });
+    await expect(applyDump(b.ctx, dump)).resolves.toBeGreaterThan(100);
+    const jobs = await b.ctx.db.select().from(s.jobs).all();
+    // The raced row was replaced by the backup's, not added alongside it.
+    expect(jobs.map((j) => j.id)).not.toContain('written-after-the-wipe');
+    expect(jobs.filter((j) => j.idempotencyKey === source.idempotencyKey).length).toBe(1);
+  });
+
   it('checksums are deterministic for the same world (cross-target comparability)', async () => {
     const a = await instance();
     await seedOwnerWorld(a.ctx.db, clock.now().toISOString());
