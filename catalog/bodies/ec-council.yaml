@@ -1,0 +1,232 @@
+# EC-Council — parameters only, from the ECE/CPE policy page and the store fee page.
+schema: 1
+
+body:
+  id: ec-council
+  name: EC-Council
+  website: https://www.eccouncil.org
+  fee_scope: membership # one annual continuing-education fee per certified member
+
+certifications:
+  - {
+      id: ec-council/ceh,
+      name: Certified Ethical Hacker,
+      abbreviation: CEH,
+      credit_unit_label: ECE,
+      expires: true,
+    }
+  - {
+      id: ec-council/chfi,
+      name: Computer Hacking Forensic Investigator,
+      abbreviation: CHFI,
+      credit_unit_label: ECE,
+      expires: true,
+    }
+  - {
+      id: ec-council/cnd,
+      name: Certified Network Defender,
+      abbreviation: CND,
+      credit_unit_label: ECE,
+      expires: true,
+    }
+  - {
+      id: ec-council/ecih,
+      name: EC-Council Certified Incident Handler,
+      abbreviation: ECIH,
+      credit_unit_label: ECE,
+      expires: true,
+    }
+  - {
+      id: ec-council/cpent,
+      name: Certified Penetration Testing Professional,
+      abbreviation: CPENT,
+      credit_unit_label: ECE,
+      expires: true,
+    }
+  - {
+      id: ec-council/csa,
+      name: Certified SOC Analyst,
+      abbreviation: CSA,
+      credit_unit_label: ECE,
+      expires: true,
+    }
+  - {
+      id: ec-council/ctia,
+      name: Certified Threat Intelligence Analyst,
+      abbreviation: CTIA,
+      credit_unit_label: ECE,
+      expires: true,
+    }
+  - {
+      id: ec-council/cciso,
+      name: Certified Chief Information Security Officer,
+      abbreviation: CCISO,
+      credit_unit_label: ECE,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2016-01-01
+    verified_on: 2026-09-12
+    sources:
+      - url: https://cert.eccouncil.org/ece-policy.html
+        title: EC-Council Continuing Education (ECE) Policy
+        retrieved_on: 2026-09-12
+        pointer: 'certifications under the policy (ECIH listed); 120 credits per certification per three years; credit table; suspension then revocation after 12 months'
+      - url: https://store.eccouncil.org/product/ece-annual-continuing-education-fees/
+        title: EC-Council Store — ECE Annual Continuing Education (CE) Fees
+        retrieved_on: 2026-09-12
+        pointer: '$80.00, Annual Continuing Education (CE) Fees for 1 year'
+    notes: >-
+      120 ECE credits per certification within three years; credits are registered by 1 February annually.
+      Annual CE fee $80 per member (policy: USD 80 with at least one certificate under the policy; the store
+      lists the same amount). The CCISO candidate handbook v6.1 (2025) mentions $100 — the store price is used
+      (VERIFY B5). Activity values are per item, not per hour: education course 1 per course, seminar/conference
+      1 per event, presentation 3, article/chapter/white paper 20, book 100, authoring a course 40, teaching a new
+      course 21 (upgrade 11), reading 5 per item, IT-security certification exam 40, higher education 15 per
+      semester / 10 per quarter, volunteering 1 per activity. No per-activity maxima are published.
+
+    categories: []
+
+    requirements:
+      - {
+          certification: ec-council/ceh,
+          cycle_months: 36,
+          total_credits: 120,
+          fee: { amount: 80.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: ec-council/chfi,
+          cycle_months: 36,
+          total_credits: 120,
+          fee: { amount: 80.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: ec-council/cnd,
+          cycle_months: 36,
+          total_credits: 120,
+          fee: { amount: 80.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: ec-council/ecih,
+          cycle_months: 36,
+          total_credits: 120,
+          fee: { amount: 80.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: ec-council/cpent,
+          cycle_months: 36,
+          total_credits: 120,
+          fee: { amount: 80.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: ec-council/csa,
+          cycle_months: 36,
+          total_credits: 120,
+          fee: { amount: 80.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: ec-council/ctia,
+          cycle_months: 36,
+          total_credits: 120,
+          fee: { amount: 80.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: ec-council/cciso,
+          cycle_months: 36,
+          total_credits: 120,
+          fee: { amount: 80.00, currency: USD, period_months: 12 },
+        }
+
+    crediting:
+      - {
+          activity_type: attend_training,
+          body_label: 'Education Course (1 per course)',
+          basis: per_item,
+          credits_per_item: 1,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Education Seminar/Conference/Event (1 per event)',
+          basis: per_item,
+          credits_per_item: 1,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Education Seminar/Conference/Event (1 per event)',
+          basis: per_item,
+          credits_per_item: 1,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Higher Education Per Semester (15)',
+          basis: per_item,
+          credits_per_item: 15,
+        }
+      - {
+          activity_type: deliver_presentation,
+          body_label: 'Presentation (3 per presentation)',
+          basis: per_item,
+          credits_per_item: 3,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Teach New (21 per course)',
+          basis: per_item,
+          credits_per_item: 21,
+        }
+      - {
+          activity_type: develop_content,
+          body_label: 'Authoring Course/Module (40)',
+          basis: per_item,
+          credits_per_item: 40,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Author Article/Book Chapter/White Paper (20)',
+          basis: per_item,
+          credits_per_item: 20,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Authoring Book (100)',
+          basis: per_item,
+          credits_per_item: 100,
+        }
+      - {
+          activity_type: read_book,
+          body_label: 'Reading Security Materials (5 per item)',
+          basis: per_item,
+          credits_per_item: 5,
+        }
+      - {
+          activity_type: read_article,
+          body_label: 'Reading Security Materials (5 per item)',
+          basis: per_item,
+          credits_per_item: 5,
+        }
+      - {
+          activity_type: earn_certification,
+          body_label: 'Certification Examination Related to IT Security (40)',
+          basis: per_item,
+          credits_per_item: 40,
+        }
+      - {
+          activity_type: vendor_exam,
+          body_label: 'Certification Examination Related to IT Security (40)',
+          basis: per_item,
+          credits_per_item: 40,
+        }
+      - {
+          activity_type: volunteer,
+          body_label: 'Volunteering in Public Sector (1 per activity)',
+          basis: per_item,
+          credits_per_item: 1,
+        }
+
+    constraints:
+      - { type: cycle_total }
+      - { type: fee_paid }
+
+    relations: []
