@@ -1,0 +1,225 @@
+# ISACA — parameters only, from the ISACA CPE Policy (PDF) and the CISA maintenance page.
+schema: 1
+
+body:
+  id: isaca
+  name: ISACA
+  website: https://www.isaca.org
+  fee_scope: certification # annual maintenance fee per certification
+
+certifications:
+  - {
+      id: isaca/cisa,
+      name: Certified Information Systems Auditor,
+      abbreviation: CISA,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: isaca/cism,
+      name: Certified Information Security Manager,
+      abbreviation: CISM,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: isaca/crisc,
+      name: Certified in Risk and Information Systems Control,
+      abbreviation: CRISC,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: isaca/cgeit,
+      name: Certified in the Governance of Enterprise IT,
+      abbreviation: CGEIT,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2026-01-01
+    verified_on: 2026-09-12
+    sources:
+      - url: https://www.isaca.org/-/media/files/isacadp/project/isaca/certification/general/cpe_policy.pdf
+        title: ISACA Continuing Professional Education (CPE) Policy (© 2026)
+        retrieved_on: 2026-09-12
+        sha256: 601d30ccff38aa900564dbc37926d3f9d4895b6477e88f2534a311103184186c
+        pointer: 'p.4 requirements; p.6-7 qualifying activities and limits; p.7-8 calculating CPE hours'
+      - url: https://www.isaca.org/credentialing/cisa/maintain-cisa-certification
+        title: Maintain your CISA — annual maintenance fee
+        retrieved_on: 2026-09-12
+        pointer: '$45 members / $85 non-members, due 1 January; 3rd+ certification $25 / $50'
+    notes: >-
+      ISACA's annual period is the calendar year and the three-year period is set by ISACA on the invoice;
+      the app's cycle starts at earned_on (VERIFY C6 — compare with the ISACA account). Annual minimum 20
+      is a REQUIREMENT (hard). 90 of 120 must align with the certification's ECO (category A); at most 30
+      may be other professional development (category B). One CPE per 50 minutes, reported to the NEAREST
+      quarter hour. Presentations earn five times the delivery time for the first delivery. Fee encoded at the
+      member rate; non-member rate in fee_params. Mentoring hours cannot be applied to multiple certifications.
+
+    categories:
+      - key: A
+        name: Aligned with the certification's ECO
+      - key: B
+        name: Other professional development (leadership, soft skills, volunteering, mentoring)
+
+    requirements:
+      - {
+          certification: isaca/cisa,
+          cycle_months: 36,
+          total_credits: 120,
+          annual_min: 20,
+          annual_min_severity: hard,
+          fee: { amount: 45.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: isaca/cism,
+          cycle_months: 36,
+          total_credits: 120,
+          annual_min: 20,
+          annual_min_severity: hard,
+          fee: { amount: 45.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: isaca/crisc,
+          cycle_months: 36,
+          total_credits: 120,
+          annual_min: 20,
+          annual_min_severity: hard,
+          fee: { amount: 45.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: isaca/cgeit,
+          cycle_months: 36,
+          total_credits: 120,
+          annual_min: 20,
+          annual_min_severity: hard,
+          fee: { amount: 45.00, currency: USD, period_months: 12 },
+        }
+
+    crediting:
+      - {
+          activity_type: attend_training,
+          body_label: 'Non-ISACA professional education activities and meetings',
+          basis: per_minutes,
+          minutes_per_credit: 50,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Professional education activities and meetings (conferences, seminars, workshops)',
+          basis: per_minutes,
+          minutes_per_credit: 50,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Webinars and virtual summits',
+          basis: per_minutes,
+          minutes_per_credit: 50,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: self_study_timed,
+          body_label: 'Online asynchronous courses (self-study) with a certificate stating CPE hours',
+          basis: per_minutes,
+          minutes_per_credit: 50,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'University course (15 CPE per semester credit hour)',
+          basis: per_item,
+          credits_per_item: 15,
+          category: A,
+        }
+      - {
+          activity_type: deliver_presentation,
+          body_label: 'Teaching/lecturing/presenting (5 CPE per delivery hour, first delivery)',
+          basis: per_minutes,
+          minutes_per_credit: 12,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Teaching/lecturing/presenting (5 CPE per delivery hour, first delivery)',
+          basis: per_minutes,
+          minutes_per_credit: 12,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Publication of articles, monographs, and books (actual hours)',
+          basis: per_minutes,
+          minutes_per_credit: 50,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Publication of articles, monographs, and books (actual hours)',
+          basis: per_minutes,
+          minutes_per_credit: 50,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: vendor_exam,
+          body_label: 'Passing related professional examinations (2 CPE per exam hour)',
+          basis: per_minutes,
+          minutes_per_credit: 30,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: earn_certification,
+          body_label: 'Passing related professional examinations (2 CPE per exam hour)',
+          basis: per_minutes,
+          minutes_per_credit: 30,
+          rounding: nearest_quarter,
+          category: A,
+        }
+      - {
+          activity_type: develop_content,
+          body_label: 'Contributions to the profession (20-hour annual limit)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: nearest_quarter,
+          category: A,
+          cap_per_year: 20,
+        }
+      - {
+          activity_type: volunteer,
+          body_label: 'ISACA volunteer group participation (20-hour annual limit)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: nearest_quarter,
+          category: B,
+          cap_per_year: 20,
+        }
+      - {
+          activity_type: mentor,
+          body_label: 'Mentoring/mentee (10-hour annual limit)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: nearest_quarter,
+          category: B,
+          cap_per_year: 10,
+        }
+
+    constraints:
+      - { type: cycle_total }
+      - { type: annual_min, severity: hard }
+      - { type: category_min, params: { category: A, min: 90 } }
+      - { type: category_max, params: { category: B, max: 30 } }
+      - { type: fee_paid }
+
+    relations: []
