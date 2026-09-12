@@ -12,6 +12,7 @@ import { FsObjectStore } from './adapters/node/fs-object-store';
 import { IntervalTickSource } from './adapters/node/interval-tick';
 import { PdfTextExtractor } from './adapters/shared/pdf-text-extractor';
 import { DbJobQueue } from './adapters/shared/db-job-queue';
+import { TrustedHeaderAuth } from './adapters/node/trusted-header-auth';
 import { tick } from './app';
 
 const DATA_DIR = process.env['DATA_DIR'] ?? './data';
@@ -30,6 +31,14 @@ const ctx = {
   objectStore: new FsObjectStore(DATA_DIR),
   textExtractor: new PdfTextExtractor(),
   jobQueue: new DbJobQueue(db, systemClock),
+  // AUTH_MODE=trusted-header: a reverse proxy that strips and sets TRUSTED_HEADER_NAME (default Remote-User).
+  extraAuth:
+    process.env['AUTH_MODE'] === 'trusted-header'
+      ? {
+          mode: 'grant' as const,
+          authenticator: new TrustedHeaderAuth(process.env['TRUSTED_HEADER_NAME'] ?? 'Remote-User'),
+        }
+      : undefined,
 };
 root.route('/', createApp(ctx));
 new IntervalTickSource(Number(process.env['TICK_MS'] ?? 15_000)).start((budget) =>

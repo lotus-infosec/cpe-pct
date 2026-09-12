@@ -7,6 +7,7 @@ import { LocalAuth } from './adapters/shared/local-auth';
 import { R2ObjectStore } from './adapters/cloudflare/r2-object-store';
 import { PdfTextExtractor } from './adapters/shared/pdf-text-extractor';
 import { DbJobQueue } from './adapters/shared/db-job-queue';
+import { AccessJwtAuth } from './adapters/cloudflare/access-jwt-auth';
 import { tick } from './app';
 
 // `Env` is generated into worker-configuration.d.ts by `wrangler types` from wrangler.jsonc.
@@ -20,6 +21,14 @@ function context(env: Env) {
     objectStore: new R2ObjectStore(env.EVIDENCE),
     textExtractor: new PdfTextExtractor(),
     jobQueue: new DbJobQueue(db, systemClock),
+    // Optional Cloudflare Access gate: set CF_ACCESS_TEAM (team domain) and CF_ACCESS_AUD (application AUD) as vars.
+    extraAuth:
+      env.CF_ACCESS_TEAM && env.CF_ACCESS_AUD
+        ? {
+            mode: 'gate' as const,
+            authenticator: new AccessJwtAuth(env.CF_ACCESS_TEAM, env.CF_ACCESS_AUD),
+          }
+        : undefined,
   };
 }
 

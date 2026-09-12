@@ -5,6 +5,13 @@ import { api, fmtMoney } from '@/lib/api';
 import type { Body, Held, Membership } from '@/lib/types';
 import { Badge, Button, Card, ErrorText, Field, Input, Select } from '@/components/ui';
 
+interface UpdateCheck {
+  url: string;
+  checkedAt: string;
+  updates: { body: string; local: number | null; remote: number; verified_on: string }[];
+  remoteBodies: string[];
+}
+
 export function Certifications() {
   const qc = useQueryClient();
   const catalog = useQuery({
@@ -65,6 +72,9 @@ export function Certifications() {
   });
 
   const bodies = catalog.data?.bodies ?? [];
+  const check = useMutation({
+    mutationFn: () => api<UpdateCheck>('/api/catalog/updates/check', { method: 'POST' }),
+  });
   const selected = bodies.flatMap((b) => b.certifications).find((c) => c.id === certificationId);
 
   return (
@@ -237,6 +247,28 @@ export function Certifications() {
             Add
           </Button>
         </form>
+        <div className="mt-4 border-t pt-3 text-xs text-muted-foreground">
+          <p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => check.mutate()}
+              disabled={check.isPending}
+            >
+              Check for catalog updates
+            </Button>{' '}
+            fetches one file, <code>catalog/lock.json</code>, from this project's GitHub repository
+            and compares versions. Nothing about you is sent. It never runs on its own.
+          </p>
+          {check.data && (
+            <p className="mt-1">
+              {check.data.updates.length === 0
+                ? `Up to date with ${check.data.url} as of ${check.data.checkedAt.slice(0, 16).replace('T', ' ')}.`
+                : `Newer rule versions available: ${check.data.updates.map((u) => `${u.body} v${u.remote} (verified ${u.verified_on})`).join(', ')}. Update by redeploying or pulling a new image.`}
+            </p>
+          )}
+          <ErrorText error={check.error} />
+        </div>
         <p className="mt-4 text-xs text-muted-foreground">
           Catalog:{' '}
           {bodies

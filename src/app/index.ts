@@ -21,6 +21,7 @@ import { ensureRecurringJobs } from './jobs/renewal-scan';
 import { notificationsRoute, settingsRoute } from './routes/notifications';
 import { exportsRoute } from './routes/exports';
 import { backupRoute } from './routes/backup';
+import { catalogUpdates } from './routes/catalog-updates';
 
 export type { AppContext } from './context';
 export type App = ReturnType<typeof createApp>;
@@ -32,7 +33,16 @@ export function createApp(ctx: AppContext) {
 
   app.use('*', async (c, next) => {
     c.set('ctx', ctx);
-    c.set('principal', await ctx.auth.authenticate(c.req.raw));
+    let principal = await ctx.auth.authenticate(c.req.raw);
+    if (ctx.extraAuth) {
+      const extra = await ctx.extraAuth.authenticator.authenticate(c.req.raw);
+      if (ctx.extraAuth.mode === 'gate') {
+        // Access must have let the request through; without its assertion nothing is authenticated.
+        if (!extra && c.req.path.startsWith('/api/'))
+          return c.json({ error: 'access_required' }, 401);
+      } else if (!principal && extra) principal = extra;
+    }
+    c.set('principal', principal);
     await next();
   });
 
@@ -65,6 +75,7 @@ export function createApp(ctx: AppContext) {
 
   app.route('/api', auth);
   app.route('/api/catalog', catalog);
+  app.route('/api/catalog/updates', catalogUpdates);
   app.route('/api/held', held);
   app.route('/api/memberships', memberships);
   app.route('/api/activities', activities);
