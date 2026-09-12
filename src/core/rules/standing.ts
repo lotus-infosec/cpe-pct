@@ -10,8 +10,9 @@ import type {
   RuleSet,
   Severity,
 } from '../domain/types';
-import { addDays, addMonths, buckets, daysBetween, inRange } from '../cycles/dates';
+import { addDays, buckets, daysBetween, inRange } from '../cycles/dates';
 import { toX100 } from './resolve';
+import { feeSchedule } from './fees';
 
 export interface StandingContext {
   held: HeldCert; // the cert this cycle belongs to
@@ -190,42 +191,37 @@ function evaluate(
       );
     }
     case 'fee_paid': {
-      const scope = ctx.rules.feeScope;
-      if (scope === 'none' || !req?.feePeriodMonths)
+      const schedule = feeSchedule(cycle, ctx, req);
+      if (schedule.length === 0)
         return fin({ ...base, due: null, satisfied: true, note: 'no fee' }, ctx.asOf);
-      const membership = ctx.memberships.find((m) => m.bodyId === ctx.held.bodyId);
-      const targetId = scope === 'membership' ? membership?.id : cycle.id;
-      const scopeLabel =
-        scope === 'membership' ? `membership:${ctx.held.bodyId}` : `cycle:${cycle.id}`;
-      const targetType = scope === 'membership' ? 'membership' : 'cycle';
-      const paid = ctx.payments.filter(
-        (p) =>
-          p.targetType === targetType &&
-          p.targetId === targetId &&
-          (p.status === 'paid' || p.status === 'waived'),
-      );
-      // Every fee period from cycle start up to asOf must be covered by a paid/waived payment.
-      let start = cycle.startsOn;
-      while (start <= ctx.asOf && start < cycle.endsOn) {
-        const end = addMonths(start, req.feePeriodMonths);
-        const covered = paid.some((p) => p.periodStart <= start && p.periodEnd > start);
-        if (!covered) {
-          const overdueDays = Math.max(0, daysBetween(start, ctx.asOf));
-          return fin(
-            {
-              ...base,
-              scope: scopeLabel,
-              period: `${start}..${end}`,
-              due: start,
-              satisfied: false,
-              overdueDays,
-            },
-            ctx.asOf,
-          );
-        }
-        start = end;
+      const scopeLabel = schedule[0]!.scope;
+      // Every period that has started must be paid, waived, or covered by a higher certification.
+      const missing = schedule.find((p) => p.periodStart <= ctx.asOf && p.status === 'due');
+      if (missing) {
+        const overdueDays = Math.max(0, daysBetween(missing.periodStart, ctx.asOf));
+        return fin(
+          {
+            ...base,
+            scope: scopeLabel,
+            period: `${missing.periodStart}..${missing.periodEnd}`,
+            due: missing.dueOn,
+            satisfied: false,
+            overdueDays,
+          },
+          ctx.asOf,
+        );
       }
-      return fin({ ...base, scope: scopeLabel, due: null, satisfied: true }, ctx.asOf);
+      const covered = schedule[0]!.coveredBy;
+      return fin(
+        {
+          ...base,
+          scope: scopeLabel,
+          due: null,
+          satisfied: true,
+          ...(covered ? { note: `covered by ${covered}` } : {}),
+        },
+        ctx.asOf,
+      );
     }
     case 'prerequisite_current': {
       const certId = String(c.params['certification']);

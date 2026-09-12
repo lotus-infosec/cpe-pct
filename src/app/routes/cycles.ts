@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import * as s from '../../db/schema';
 import { newId, today, type Vars } from '../context';
 import { rollover, standing } from '../../core/rules';
+import { feeSchedule } from '../../core/rules/fees';
 import { latestRuleVersionId, loadRuleSet, standingContext } from '../rulesets';
 
 export const cycles = new Hono<Vars>()
@@ -21,6 +22,19 @@ export const cycles = new Hono<Vars>()
     const ctx = await standingContext(db, cycle, asOf);
     if (!ctx) return c.json({ error: 'rule_version_missing' }, 500);
     return c.json(standing(cycle, ctx));
+  })
+  .get('/:id/fees', async (c) => {
+    const { db, clock } = c.get('ctx');
+    const cycle = await db
+      .select()
+      .from(s.cycles)
+      .where(eq(s.cycles.id, c.req.param('id')))
+      .get();
+    if (!cycle) return c.json({ error: 'not_found' }, 404);
+    const ctx = await standingContext(db, cycle, today(clock));
+    if (!ctx) return c.json({ error: 'rule_version_missing' }, 500);
+    const req = ctx.rules.requirements.find((r) => r.certificationId === ctx.held.certificationId);
+    return c.json(feeSchedule(cycle, ctx, req));
   })
   .post(
     '/:id/renew',

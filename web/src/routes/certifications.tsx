@@ -85,13 +85,26 @@ export function Certifications() {
                     earned {h.earnedOn}
                     {h.certNumber ? ` · #${h.certNumber}` : ''}
                   </span>
-                  {open ? (
-                    <Link className="ml-auto text-xs underline" to={`/cycles/${open.id}`}>
-                      cycle {open.startsOn} → {open.endsOn}
-                    </Link>
-                  ) : (
-                    <span className="ml-auto text-xs text-muted-foreground">no cycle</span>
-                  )}
+                  <span className="ml-auto flex flex-wrap gap-2 text-xs">
+                    {h.cycles
+                      .filter((c) => c.status !== 'open')
+                      .map((c) => (
+                        <Link
+                          key={c.id}
+                          className="text-muted-foreground underline"
+                          to={`/cycles/${c.id}`}
+                        >
+                          cycle {c.sequence} ({c.status})
+                        </Link>
+                      ))}
+                    {open ? (
+                      <Link className="underline" to={`/cycles/${open.id}`}>
+                        cycle {open.sequence}: {open.startsOn} → {open.endsOn}
+                      </Link>
+                    ) : (
+                      <span className="text-muted-foreground">no cycle</span>
+                    )}
+                  </span>
                   <Button
                     size="sm"
                     variant="ghost"

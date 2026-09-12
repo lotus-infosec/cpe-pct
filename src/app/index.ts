@@ -17,6 +17,8 @@ import { jobsRoute } from './routes/jobs';
 import { runDueJobs } from '../adapters/shared/db-job-queue';
 import { jobHandlers } from './jobs/extract-text';
 import type { TickBudget } from '../ports';
+import { ensureRecurringJobs } from './jobs/renewal-scan';
+import { notificationsRoute, settingsRoute } from './routes/notifications';
 
 export type { AppContext } from './context';
 export type App = ReturnType<typeof createApp>;
@@ -68,6 +70,8 @@ export function createApp(ctx: AppContext) {
   app.route('/api/evidence', evidence);
   app.route('/api/activities', activityEvidenceRoute);
   app.route('/api/jobs', jobsRoute);
+  app.route('/api/notifications', notificationsRoute);
+  app.route('/api/settings', settingsRoute);
 
   app.notFound((c) => c.json({ error: 'not_found' }, 404));
   app.onError((err, c) => {
@@ -80,6 +84,7 @@ export function createApp(ctx: AppContext) {
 }
 
 /** The one job runner, called by IntervalTickSource (Node) and scheduled() (Workers). */
-export function tick(ctx: AppContext, budget: TickBudget) {
+export async function tick(ctx: AppContext, budget: TickBudget) {
+  await ensureRecurringJobs(ctx);
   return runDueJobs(ctx.db, ctx.clock, jobHandlers(ctx), budget);
 }

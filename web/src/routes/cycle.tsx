@@ -12,6 +12,19 @@ import type {
 } from '@/lib/types';
 import { Badge, Button, Card, ErrorText, Field, Input } from '@/components/ui';
 
+interface FeePeriod {
+  targetType: 'cycle' | 'membership';
+  targetId: string | null;
+  scope: string;
+  periodStart: string;
+  periodEnd: string;
+  dueOn: string;
+  amountCents: number | null;
+  currency: string | null;
+  status: 'paid' | 'waived' | 'due';
+  coveredBy: string | null;
+}
+
 const LABEL: Record<string, string> = {
   cycle_total: 'Cycle total',
   annual_min: 'Annual minimum',
@@ -44,6 +57,52 @@ export function CyclePage() {
   const memberships = useQuery({
     queryKey: ['memberships'],
     queryFn: () => api<Membership[]>('/api/memberships'),
+  });
+  const fees = useQuery({
+    queryKey: ['fees', id],
+    queryFn: () => api<FeePeriod[]>(`/api/cycles/${id}/fees`),
+  });
+  const [waiveReason, setWaiveReason] = useState('');
+  const [payOn2, setPayOn2] = useState('');
+  const invalidateAll = () => qc.invalidateQueries();
+  const waive = useMutation({
+    mutationFn: (p: FeePeriod) =>
+      api('/api/payments', {
+        method: 'POST',
+        body: {
+          targetType: p.targetType,
+          targetId: p.targetId,
+          periodStart: p.periodStart,
+          periodEnd: p.periodEnd,
+          dueOn: p.dueOn,
+          amountCents: p.amountCents ?? 0,
+          currency: p.currency ?? 'USD',
+          status: 'waived',
+          waiveReason,
+        },
+      }),
+    onSuccess: () => {
+      setWaiveReason('');
+      invalidateAll();
+    },
+  });
+  const payPeriod = useMutation({
+    mutationFn: (p: FeePeriod) =>
+      api('/api/payments', {
+        method: 'POST',
+        body: {
+          targetType: p.targetType,
+          targetId: p.targetId,
+          periodStart: p.periodStart,
+          periodEnd: p.periodEnd,
+          dueOn: p.dueOn,
+          amountCents: p.amountCents ?? 0,
+          currency: p.currency ?? 'USD',
+          status: 'paid',
+          paidOn: payOn2 || p.dueOn,
+        },
+      }),
+    onSuccess: invalidateAll,
   });
   const h = held.data?.find((x) => x.cycles.some((c) => c.id === id));
   const cycle = h?.cycles.find((c) => c.id === id);
@@ -148,6 +207,91 @@ export function CyclePage() {
         )}
       </Card>
 
+      {fees.data && fees.data.length > 0 && (
+        <Card>
+          <h3 className="mb-1 font-semibold">Fee schedule</h3>
+          <p className="mb-2 text-xs text-muted-foreground">
+            Every fee period this cycle implies ({fees.data[0]!.scope}). Record a payment when you
+            pay the issuer; waive with a reason when the issuer waived it or a higher certification
+            covers it.
+          </p>
+          <table className="w-full text-sm">
+            <thead className="text-left text-xs text-muted-foreground">
+              <tr>
+                <th className="py-1 pr-2">Period</th>
+                <th className="pr-2">Due</th>
+                <th className="pr-2">Amount</th>
+                <th className="pr-2">Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {fees.data.map((p) => (
+                <tr key={p.periodStart} className="border-t">
+                  <td className="py-1 pr-2">
+                    {p.periodStart} → {p.periodEnd}
+                  </td>
+                  <td className="pr-2">{p.dueOn}</td>
+                  <td className="pr-2">
+                    {p.amountCents != null ? fmtMoney(p.amountCents, p.currency ?? 'USD') : '—'}
+                  </td>
+                  <td className="pr-2">
+                    <Badge
+                      tone={
+                        p.status === 'paid'
+                          ? 'ok'
+                          : p.status === 'waived'
+                            ? 'muted'
+                            : p.dueOn <= s.asOf
+                              ? 'bad'
+                              : 'warn'
+                      }
+                    >
+                      {p.status}
+                      {p.coveredBy ? ` (covered by ${p.coveredBy.split('/')[1]})` : ''}
+                    </Badge>
+                  </td>
+                  <td className="whitespace-nowrap">
+                    {p.status === 'due' && p.targetId && (
+                      <span className="flex flex-wrap items-center gap-1">
+                        <Input
+                          type="date"
+                          className="h-7 w-36 text-xs"
+                          value={payOn2}
+                          onChange={(e) => setPayOn2(e.target.value)}
+                        />
+                        <Button size="sm" variant="outline" onClick={() => payPeriod.mutate(p)}>
+                          paid
+                        </Button>
+                        <Input
+                          className="h-7 w-32 text-xs"
+                          placeholder="waive reason"
+                          value={waiveReason}
+                          onChange={(e) => setWaiveReason(e.target.value)}
+                        />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={!waiveReason.trim()}
+                          onClick={() => waive.mutate(p)}
+                        >
+                          waive
+                        </Button>
+                      </span>
+                    )}
+                    {p.status === 'due' && !p.targetId && (
+                      <span className="text-xs text-amber-700">
+                        add a membership for this body first
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <ErrorText error={payPeriod.error ?? waive.error} />
+        </Card>
+      )}
       <Card>
         <h3 className="mb-2 font-semibold">Credit applications</h3>
         <p className="mb-2 text-xs text-muted-foreground">
@@ -287,6 +431,12 @@ export function CyclePage() {
         <ErrorText error={patch.error} />
       </Card>
 
+      {cycle.status !== 'open' && (
+        <p className="text-xs text-muted-foreground">
+          This cycle is {cycle.status}. Its applications and pinned rule version are kept as
+          history.
+        </p>
+      )}
       {cycle.status === 'open' && (
         <Card>
           <h3 className="mb-1 font-semibold">Renewal</h3>
