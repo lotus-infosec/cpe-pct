@@ -47,6 +47,11 @@ export default tseslint.config(
     },
   },
   {
+    // Declaration files merge into globals and may not have top-level imports; import() types are the tool.
+    files: ['**/*.d.ts'],
+    rules: { '@typescript-eslint/consistent-type-imports': 'off' },
+  },
+  {
     files: ['src/core/**/*.ts'],
     rules: {
       'no-restricted-imports': ['error', { patterns: coreForbiddenImports }],
