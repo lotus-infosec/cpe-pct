@@ -1,12 +1,62 @@
 {
+  "aws@1": {
+    "hash": "9a110fe7d9100b8984ead8393c44b4c4b5a8eaabe8a537826deef6cede666c96",
+    "migration": "0004_seed_aws_v1.sql",
+    "verified_on": "2026-09-12"
+  },
+  "cisco@1": {
+    "hash": "920007ae694eb506018522c47ee481179ec962aa673adf90534c1ad22976b77e",
+    "migration": "0005_seed_cisco_v1.sql",
+    "verified_on": "2026-09-12"
+  },
   "comptia@1": {
     "hash": "d2fda2bf7ba760eb6036c102e8d3c2a9a6e8c2392bace98abc8f917247b1ab21",
     "migration": "0002_seed_comptia_v1.sql",
     "verified_on": "2026-09-11"
   },
+  "ec-council@1": {
+    "hash": "fe3ad1dca6493151839e8956d07eff389e47376e00e550479b852fed107de4c8",
+    "migration": "0006_seed_ec-council_v1.sql",
+    "verified_on": "2026-09-12"
+  },
+  "giac@1": {
+    "hash": "1de9caf97ac55c16ac9893a7c95bbe18febcdba380fce631e365ef5891aeb7dd",
+    "migration": "0007_seed_giac_v1.sql",
+    "verified_on": "2026-09-12"
+  },
+  "iapp@1": {
+    "hash": "8693bbdffda6b1e88a52a41720c8c0a710424560637313e2d72d14d5df6f7bbd",
+    "migration": "0008_seed_iapp_v1.sql",
+    "verified_on": "2026-09-12"
+  },
+  "imi@1": {
+    "hash": "e62ab004d4a3101d5afdf956a7de56eb4946da46e6dcd6bef214c953521b0bc6",
+    "migration": "0009_seed_imi_v1.sql",
+    "verified_on": "2026-09-12"
+  },
+  "isaca@1": {
+    "hash": "c44ef3685ab39f7c0b51d7f5621bfd552b0203dede030584e6bf77ff35927138",
+    "migration": "0010_seed_isaca_v1.sql",
+    "verified_on": "2026-09-12"
+  },
   "isc2@1": {
     "hash": "f01e806ffefe80731b9d1a5c3ce67765647b36bd172da9aae103e78392158059",
     "migration": "0003_seed_isc2_v1.sql",
     "verified_on": "2026-09-11"
+  },
+  "microsoft@1": {
+    "hash": "d361ccfb22b72f646ea484a797e9bcedfe720e34318469fafb914338569b8c16",
+    "migration": "0011_seed_microsoft_v1.sql",
+    "verified_on": "2026-09-12"
+  },
+  "pmi@1": {
+    "hash": "b8bd83bfc60459e347c21b7317443d6f8bdc18b8492acc827a7115f3810248ca",
+    "migration": "0012_seed_pmi_v1.sql",
+    "verified_on": "2026-09-12"
+  },
+  "testout@1": {
+    "hash": "3841ae06a23219eded9492fc0c17c02e6b7822da5664f3bcd7fdbf2b4ae6b142",
+    "migration": "0013_seed_testout_v1.sql",
+    "verified_on": "2026-09-12"
   }
 }
