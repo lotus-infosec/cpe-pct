@@ -13,7 +13,7 @@ pre-commit:
         if git diff --cached --name-only | grep -E '^(CLAUDE\.md|CPETracker/|imports/|data/|.*\.csv$)'; then
           echo "Private file staged. Unstage it."; exit 1; fi
     typecheck:
-      glob: "*.{ts,tsx}"
+      glob: '*.{ts,tsx}'
       run: npx tsc --noEmit
 pre-push:
   commands:

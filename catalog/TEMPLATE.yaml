@@ -5,13 +5,13 @@
 schema: 1
 
 body:
-  id: example            # slug, used as bodies.id
+  id: example # slug, used as bodies.id
   name: Example Body
   website: https://example.org
-  fee_scope: membership  # membership | certification | none
+  fee_scope: membership # membership | certification | none
 
 certifications:
-  - id: example/cert-a   # "<body>/<slug>"
+  - id: example/cert-a # "<body>/<slug>"
     name: Example Certification A
     abbreviation: ECA
     credit_unit_label: CPE
@@ -20,7 +20,7 @@ certifications:
     name: Example Certification B
     abbreviation: ECB
     credit_unit_label: CPE
-    expires: false       # lifetime cert: still listed so it appears on the dashboard
+    expires: false # lifetime cert: still listed so it appears on the dashboard
 
 versions:
   - version: 1
@@ -30,8 +30,8 @@ versions:
       - url: https://example.org/policy.pdf
         title: Example CPE Policy
         retrieved_on: 2026-09-12
-        sha256: "<sha256 of the retrieved document>"
-        pointer: "§4.2, p.7"   # where in the doc; never a quotation
+        sha256: '<sha256 of the retrieved document>'
+        pointer: '§4.2, p.7' # where in the doc; never a quotation
     notes: "Free text for the encoder's caveats."
 
     categories:
@@ -44,9 +44,9 @@ versions:
     requirements:
       - certification: example/cert-a
         cycle_months: 36
-        total_credits: 120           # decimal allowed; compiled to hundredths
+        total_credits: 120 # decimal allowed; compiled to hundredths
         annual_min: 40
-        annual_min_severity: hard    # hard | soft
+        annual_min_severity: hard # hard | soft
         fee: { amount: 135.00, currency: USD, period_months: 12 }
       # fee options: covered_by_higher_cert: true | waived_if_other_cert_held: true
 
@@ -54,15 +54,15 @@ versions:
       # activity_type must be one of the canonical keys in src/core/domain/activity-types.ts
       - activity_type: attend_conference
         body_label: Conference attendance
-        basis: per_minutes            # per_minutes | per_item | fixed
+        basis: per_minutes # per_minutes | per_item | fixed
         minutes_per_credit: 60
-        rounding: floor_quarter       # floor_quarter | floor_half | floor_whole | nearest_quarter | exact
+        rounding: floor_quarter # floor_quarter | floor_half | floor_whole | nearest_quarter | exact
         category: A
         cap_per_cycle: null
         cap_per_year: null
         cap_per_item: null
         evidence_required: true
-        applies_to: null              # null = all certs of this body, or a certification id
+        applies_to: null # null = all certs of this body, or a certification id
       - activity_type: read_book
         body_label: Reading
         basis: per_item

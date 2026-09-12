@@ -12,15 +12,15 @@ Every tracker in this space models a per-certification counter with a progress b
 
 One real-world activity (a conference session, a book, a mentoring hour) credits several certifications across several bodies at different values under different rules:
 
-| Concern | Example |
-|---|---|
+| Concern                         | Example                                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Unit conversion differs by body | Some bodies credit per 50 minutes, some per 60; some accept quarter-hours, some whole hours only |
-| Category caps | A body may cap how much of a cycle's total can come from a secondary category |
-| Annual floors | Several bodies enforce a per-year minimum inside a multi-year cycle |
-| Bodies disagree on what counts | Earning a new certification credits at some bodies and not others |
-| Stacking | A higher certification may renew a lower one, with credits flowing down |
-| Fees | A lapsed maintenance fee invalidates the certification regardless of credits |
-| Renewal by exam | Some bodies accept a recertification exam instead of credits |
+| Category caps                   | A body may cap how much of a cycle's total can come from a secondary category                    |
+| Annual floors                   | Several bodies enforce a per-year minimum inside a multi-year cycle                              |
+| Bodies disagree on what counts  | Earning a new certification credits at some bodies and not others                                |
+| Stacking                        | A higher certification may renew a lower one, with credits flowing down                          |
+| Fees                            | A lapsed maintenance fee invalidates the certification regardless of credits                     |
+| Renewal by exam                 | Some bodies accept a recertification exam instead of credits                                     |
 
 CPE PCT therefore models:
 
