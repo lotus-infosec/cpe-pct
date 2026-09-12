@@ -5,11 +5,15 @@ import { JOB_BUDGET, type AppContext } from '../context';
 import { fillDraftFromText, statusFor } from '../evidence';
 import type { Handlers } from '../../core/jobs/runner';
 import { renewalScan } from './renewal-scan';
+import { buildExport } from './build-export';
 
 export function jobHandlers(ctx: AppContext): Handlers {
   return {
     renewal_scan: async () => {
       await renewalScan(ctx, ctx.clock.now().toISOString().slice(0, 10));
+    },
+    build_export: async ({ exportId }) => {
+      await buildExport(ctx, exportId);
     },
     extract_text: async ({ evidenceId }) => {
       const ev = await ctx.db.select().from(s.evidence).where(eq(s.evidence.id, evidenceId)).get();
