@@ -4,7 +4,11 @@ A single-owner web app that tracks continuing-education credits and maintenance 
 
 This is a personal project, entirely vibecoded with Claude. It exists because the author holds certifications from several bodies and got tired of spreadsheets. It is not a product, has no roadmap beyond the author's needs, and makes no promises about the accuracy of any rule figure. Read `NOTICE.md`.
 
-> Status: usable for the author's own tracking. Stages 0–4 complete; public release pending a Cloudflare deploy-button test.
+> Status: usable for the author's own tracking. Built, deployed and validated on Workers Paid and on Docker.
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lotus-infosec/cpe-pct)
+
+The button needs a **Workers Paid** plan. The committed `limits.cpu_ms` is rejected on Free accounts, so a Free deploy fails at the last step. If you do not want to pay Cloudflare, the Docker path below costs nothing and runs the same code.
 
 ## Why the activity-centric model matters
 
@@ -60,14 +64,17 @@ Fast development loop: `npm install`, then `npm run dev:node` and `npm run dev:w
 
 Requires a Workers Paid plan: the committed `limits.cpu_ms` is rejected on Free, and PDF extraction and password hashing need the headroom. D1 and R2 stay within their free allowances for a single user (D1 free: 5 GB, 100k writes/day; R2 free: 10 GB, egress free).
 
+Press the button at the top of this page, or deploy from your own machine:
+
 ```
 npm install
 npx wrangler login
-npx wrangler deploy        # first time: provisions the D1 database and R2 bucket by name
-npm run deploy             # every time after: gitleaks gate, build, apply migrations, deploy
+npm run deploy             # build web assets, apply migrations to remote D1, deploy
 ```
 
-Deploys run from your own machine. No Cloudflare token is stored anywhere. A "Deploy to Cloudflare" button is planned once it has been proven from a fresh account.
+The first deploy provisions the D1 database and the R2 bucket by name; `wrangler.jsonc` carries no resource IDs, so nothing in this repository points at anyone's account.
+
+Deploys run from your own machine and no Cloudflare token is stored anywhere. `npm run release` is the same command behind a `gitleaks detect` sweep of the working tree, and it is how this repository is released; the gate sits outside `npm run deploy` because the button hands that script to Cloudflare's builder, which has no gitleaks binary.
 
 ## Parity
 
