@@ -43,7 +43,7 @@ describe('AccessJwtAuth (gate mode)', () => {
       true,
       ['sign', 'verify'],
     );
-    const jwk = (await crypto.subtle.exportKey('jwk', publicKey)) as JsonWebKey;
+    const jwk = (await crypto.subtle.exportKey('jwk', publicKey)) as { n?: string; e?: string };
     const certs = { keys: [{ kid: 'k1', kty: 'RSA', n: jwk.n, e: jwk.e, alg: 'RS256' }] };
     const fetchFn: typeof fetch = async (url) => {
       expect(String(url)).toBe('https://team.cloudflareaccess.com/cdn-cgi/access/certs');
