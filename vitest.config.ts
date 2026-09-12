@@ -11,6 +11,10 @@ export default defineConfig(async () => {
     test: {
       projects: [
         {
+          // Pure engine. Imports nothing from adapters; the boundary lint enforces it.
+          test: { name: 'core', environment: 'node', include: ['test/core/**/*.test.ts'] },
+        },
+        {
           test: { name: 'node', environment: 'node', include: ['test/node/**/*.test.ts'] },
         },
         {

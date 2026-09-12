@@ -1,0 +1,12 @@
+{
+  "comptia@1": {
+    "hash": "d2fda2bf7ba760eb6036c102e8d3c2a9a6e8c2392bace98abc8f917247b1ab21",
+    "migration": "0002_seed_comptia_v1.sql",
+    "verified_on": "2026-09-11"
+  },
+  "isc2@1": {
+    "hash": "f01e806ffefe80731b9d1a5c3ce67765647b36bd172da9aae103e78392158059",
+    "migration": "0003_seed_isc2_v1.sql",
+    "verified_on": "2026-09-11"
+  }
+}
