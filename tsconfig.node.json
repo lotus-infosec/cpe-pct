@@ -1,0 +1,7 @@
+// Node target: the self-hosted entrypoint and its adapters. Web-standard globals come from @types/node.
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "types": ["node"] },
+  "include": ["src/entry.node.ts", "src/adapters/node/**/*", "scripts/**/*"],
+  "exclude": ["src/**/*.test.ts"]
+}

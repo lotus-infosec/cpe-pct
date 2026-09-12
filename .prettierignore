@@ -1,0 +1,8 @@
+node_modules
+dist
+web/dist
+.wrangler
+src/db/migrations
+package-lock.json
+CPETracker
+worker-configuration.d.ts

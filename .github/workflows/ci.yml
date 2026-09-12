@@ -1,0 +1,87 @@
+# Every action is pinned to a commit SHA (VERIFY A14). Never use pull_request_target.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+permissions:
+  contents: read
+env:
+  WRANGLER_SEND_METRICS: 'false'
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run typecheck
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      # Boundary rule must bite: a core file importing an adapter has to fail lint.
+      - run: |
+          mkdir -p src/core/_violation
+          echo "import { openNodeDb } from '../../adapters/node/db'; export const x = openNodeDb;" > src/core/_violation/bad.ts
+          if npx eslint src/core/_violation/bad.ts; then echo "boundary rule did not fire"; exit 1; fi
+          rm -r src/core/_violation
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build:web
+      - run: npm test
+  migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run db:check
+      # Schema and migrations must agree: generating again must be a no-op.
+      - run: |
+          npm run db:generate
+          git diff --exit-code --stat -- src/db/migrations || { echo "schema.ts changed without a migration"; exit 1; }
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: docker build -f docker/Dockerfile -t cpe-pct:ci .
+      - run: |
+          docker run -d --name app -p 8787:8787 cpe-pct:ci
+          for i in $(seq 1 20); do curl -fs localhost:8787/api/health && break; sleep 1; done
+          a=$(curl -fs localhost:8787/api/health | sed 's/.*"pings":\([0-9]*\).*/\1/')
+          b=$(curl -fs localhost:8787/api/health | sed 's/.*"pings":\([0-9]*\).*/\1/')
+          test "$b" -eq "$((a+1))"
+          curl -fs localhost:8787/activities/123 | grep -q '<div id="root">'
+          docker rm -f app
+  wrangler-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build:web
+      - run: npx wrangler deploy --dry-run --outdir dist-cf
+  # Aggregate job. Branch protection requires the single check named "ci".
+  ci:
+    needs: [typecheck, lint, test, migrations, docker, wrangler-dry-run]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for r in "${{ needs.typecheck.result }}" "${{ needs.lint.result }}" "${{ needs.test.result }}" "${{ needs.migrations.result }}" "${{ needs.docker.result }}" "${{ needs.wrangler-dry-run.result }}"; do
+            test "$r" = success || { echo "a job failed: $r"; exit 1; }
+          done

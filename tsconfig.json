@@ -1,18 +1,7 @@
+// Cloudflare + shared code. Runtime globals come from worker-configuration.d.ts (`wrangler types`).
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitOverride": true,
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
-    "noEmit": true,
-    "types": []
-  },
-  "include": ["src"]
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "types": [] },
+  "include": ["src", "worker-configuration.d.ts", "drizzle.config.ts", "eslint.config.js"],
+  "exclude": ["src/entry.node.ts", "src/adapters/node/**", "src/**/*.test.ts"]
 }

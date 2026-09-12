@@ -1,0 +1,17 @@
+# docker compose -f docker/compose.yml up -d
+# Data (SQLite file + evidence) lives on the named volume `data`, mounted at /data.
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: cpe-pct:local
+    ports:
+      - '8787:8787'
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - data:/data
+    restart: unless-stopped
+volumes:
+  data:

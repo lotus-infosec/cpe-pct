@@ -4,7 +4,7 @@ pre-commit:
   commands:
     branch-guard:
       run: |
-        b=$(git rev-parse --abbrev-ref HEAD)
+        b=$(git symbolic-ref --short HEAD 2>/dev/null || echo detached)
         if [ "$b" = "main" ]; then echo "Refusing to commit on main. Use dev or a feature branch."; exit 1; fi
     gitleaks:
       run: gitleaks protect --staged --redact --verbose
@@ -13,9 +13,14 @@ pre-commit:
         if git diff --cached --name-only | grep -E '^(CLAUDE\.md|CPETracker/|imports/|data/|.*\.csv$)'; then
           echo "Private file staged. Unstage it."; exit 1; fi
     typecheck:
-      glob: "*.{ts,tsx}"
+      glob: '*.{ts,tsx}'
       run: npx tsc --noEmit
 pre-push:
   commands:
     gitleaks-history:
-      run: gitleaks detect --redact --log-opts="origin/main..HEAD" || gitleaks detect --redact
+      run: |
+        if git rev-parse -q --verify origin/main >/dev/null; then
+          gitleaks detect --redact --log-opts="origin/main..HEAD"
+        else
+          gitleaks detect --redact
+        fi

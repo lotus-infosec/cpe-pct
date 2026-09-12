@@ -1,0 +1,42 @@
+// Cloudflare Workers target. Bindings carry default names and no hard-coded IDs so the
+// Deploy to Cloudflare button (and wrangler's resource provisioning) can create them.
+// The Docker target ignores this file entirely.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cpe-pct",
+  "main": "src/entry.cloudflare.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./web/dist",
+    "binding": "ASSETS",
+    // Unmatched paths serve index.html (client-side routing). Navigation requests skip the
+    // Worker by default, which would shadow /api/*; run_worker_first fixes that (VERIFY A10).
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cpe-pct",
+      // Drizzle Kit output. wrangler reads top-level *.sql only; meta/ is ignored (VERIFY A3).
+      "migrations_dir": "src/db/migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "EVIDENCE",
+      "bucket_name": "cpe-pct-evidence",
+    },
+  ],
+  "triggers": {
+    "crons": ["* * * * *"],
+  },
+  // Workers Paid. Default is 30 s; stated explicitly so it is reviewable (VERIFY A1). Max 300000.
+  "limits": {
+    "cpu_ms": 30000,
+  },
+  // Workers Logs stay in the deployer's own account; off by default, flip if you want them.
+  "observability": {
+    "enabled": false,
+  },
+}
