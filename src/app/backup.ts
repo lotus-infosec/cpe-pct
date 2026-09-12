@@ -142,9 +142,21 @@ export async function wipe(ctx: AppContext): Promise<void> {
   for await (const o of ctx.objectStore.list('exports/')) await ctx.objectStore.delete(o.key);
 }
 
-/** Applies the dump statements in chunks. Statements are one per line by construction. */
+/**
+ * Applies the dump statements in chunks. Statements are one per line by construction.
+ *
+ * Applied as INSERT OR REPLACE, not plain INSERT: the wipe cannot be held against concurrent
+ * writers (D1 has no interactive transactions), and on Workers the every-minute cron re-seeds the
+ * recurring `renewal_scan` job the moment the jobs table is empty. Its row carries the same
+ * `idempotency_key` as the one in the dump, so a plain INSERT aborts the whole restore on a UNIQUE
+ * violation. OR REPLACE drops whatever conflicts on any unique constraint and writes the backup's
+ * row, which is what a full restore means: the backup is the intended final state.
+ */
 export async function applyDump(ctx: AppContext, dump: string): Promise<number> {
-  const stmts = dump.split('\n').filter((l) => l.startsWith('INSERT INTO'));
+  const stmts = dump
+    .split('\n')
+    .filter((l) => l.startsWith('INSERT INTO'))
+    .map((l) => `INSERT OR REPLACE INTO${l.slice('INSERT INTO'.length)}`);
   let n = 0;
   for (let i = 0; i < stmts.length; i += 50) {
     const chunk = stmts.slice(i, i + 50).map((q) => ctx.db.run(sql.raw(q)));
