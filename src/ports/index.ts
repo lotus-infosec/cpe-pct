@@ -55,7 +55,7 @@ export interface JobQueue {
   enqueue<T extends JobType>(
     type: T,
     payload: JobPayload[T],
-    opts?: { runAt?: Date; idempotencyKey?: string },
+    opts?: { runAt?: Date; idempotencyKey?: string; cron?: string },
   ): Promise<string>;
 }
 /** The only per-target difference in background work: who calls the runner, and how much it may do per call. */

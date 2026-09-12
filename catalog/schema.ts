@@ -115,7 +115,8 @@ export const Version = z.object({
       }),
     )
     .default([]),
-  requirements: z.array(Requirement).min(1),
+  // Lifetime-only bodies (e.g. TestOut) carry no requirements; certifications still appear in the picker.
+  requirements: z.array(Requirement).default([]),
   crediting: z.array(Crediting).default([]),
   constraints: z.array(Constraint).default([]),
   relations: z.array(Relation).default([]),

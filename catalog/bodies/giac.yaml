@@ -1,0 +1,112 @@
+# GIAC — parameters only. GIAC publishes per-category maxima, not per-hour rates, so no crediting rules are
+# seeded (VERIFY B4): apply credits by override with the GIAC portal's accepted value.
+schema: 1
+
+body:
+  id: giac
+  name: GIAC
+  website: https://www.giac.org
+  fee_scope: certification
+
+certifications:
+  - {
+      id: giac/gsec,
+      name: GIAC Security Essentials,
+      abbreviation: GSEC,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: giac/gcih,
+      name: GIAC Certified Incident Handler,
+      abbreviation: GCIH,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: giac/gcia,
+      name: GIAC Certified Intrusion Analyst,
+      abbreviation: GCIA,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: giac/gcfa,
+      name: GIAC Certified Forensic Analyst,
+      abbreviation: GCFA,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: giac/gpen,
+      name: GIAC Penetration Tester,
+      abbreviation: GPEN,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2025-01-01
+    verified_on: 2026-09-12
+    sources:
+      - url: https://www.giac.org/pdfs/cert-renewal/SANS-GIAC-Certification-Renewal-Brochure-How-To.pdf
+        title: GIAC Certification Renewal How-To Guide
+        retrieved_on: 2026-09-12
+        sha256: 2935509dc03e9e580ad33f51a3568f7dbb38ae397770958695dc373f3fa69482
+        pointer: 'p.2 36 CPEs over four years or retake; p.4 valid four years, fee payable from the two-year mark'
+      - url: https://www.giac.org/knowledge-base/renewal
+        title: GIAC Renewal knowledge base
+        retrieved_on: 2026-09-12
+        pointer: '$499 per four years; additional renewals within two years $249; registration opens at the 2-year mark'
+      - url: https://www.giac.org/renewal/cpe-information
+        title: GIAC CPE Information
+        retrieved_on: 2026-09-12
+        pointer: 'category maxima per renewal: affiliated programs 36, career development 36, other industry training 18, NetWars 12, cyber ranges 12, work experience 12, community 12'
+    notes: >-
+      Four-year cycle; 36 CPEs OR retake the exam (any_of). Renewal fee $499 per certification per four-year
+      term, paid any time from the two-year mark; additional renewals registered within the following two
+      years are $249 (fee_params). Per-hour crediting rates are not published — only category maxima — so no
+      crediting rules are seeded; use overrides with the value GIAC accepted.
+
+    categories: []
+
+    requirements:
+      - {
+          certification: giac/gsec,
+          cycle_months: 48,
+          total_credits: 36,
+          fee: { amount: 499.00, currency: USD, period_months: 48 },
+        }
+      - {
+          certification: giac/gcih,
+          cycle_months: 48,
+          total_credits: 36,
+          fee: { amount: 499.00, currency: USD, period_months: 48 },
+        }
+      - {
+          certification: giac/gcia,
+          cycle_months: 48,
+          total_credits: 36,
+          fee: { amount: 499.00, currency: USD, period_months: 48 },
+        }
+      - {
+          certification: giac/gcfa,
+          cycle_months: 48,
+          total_credits: 36,
+          fee: { amount: 499.00, currency: USD, period_months: 48 },
+        }
+      - {
+          certification: giac/gpen,
+          cycle_months: 48,
+          total_credits: 36,
+          fee: { amount: 499.00, currency: USD, period_months: 48 },
+        }
+
+    crediting: []
+
+    constraints:
+      - { type: any_of, params: { of: [{ type: cycle_total }, { type: recert_exam }] } }
+      - { type: fee_paid }
+
+    relations: []

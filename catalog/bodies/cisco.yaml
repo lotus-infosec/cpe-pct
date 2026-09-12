@@ -1,0 +1,80 @@
+# Cisco — recertification by exam OR Continuing Education credits. CE credit values are assigned per
+# approved item in the Cisco CE portal, not per hour, so no crediting rules are seeded (VERIFY B7).
+schema: 1
+
+body:
+  id: cisco
+  name: Cisco
+  website: https://www.cisco.com
+  fee_scope: none
+
+certifications:
+  - {
+      id: cisco/ccna,
+      name: Cisco Certified Network Associate,
+      abbreviation: CCNA,
+      credit_unit_label: CE credit,
+      expires: true,
+    }
+  - {
+      id: cisco/ccnp-security,
+      name: Cisco Certified Network Professional Security,
+      abbreviation: CCNP Security,
+      credit_unit_label: CE credit,
+      expires: true,
+    }
+  - {
+      id: cisco/ccnp-enterprise,
+      name: Cisco Certified Network Professional Enterprise,
+      abbreviation: CCNP Enterprise,
+      credit_unit_label: CE credit,
+      expires: true,
+    }
+  - {
+      id: cisco/cyberops-associate,
+      name: Cisco Certified CyberOps Associate,
+      abbreviation: CyberOps Associate,
+      credit_unit_label: CE credit,
+      expires: true,
+    }
+  - {
+      id: cisco/ccie-security,
+      name: Cisco Certified Internetwork Expert Security,
+      abbreviation: CCIE Security,
+      credit_unit_label: CE credit,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2025-07-15
+    verified_on: 2026-09-12
+    sources:
+      - url: https://www.cisco.com/c/en/us/training-events/training-certifications/recertification-policy.html
+        title: Cisco Recertification Policy
+        retrieved_on: 2026-09-12
+        pointer: 'three years; CE credits Associate 30, Specialist 40, Professional 80, Expert 120; or re-take / advance by exam'
+    notes: >-
+      Three-year validity. Recertify by earning the level's CE credits OR by passing the qualifying exam(s)
+      (any_of). CE credits are assigned per approved activity in the Cisco CE portal, not per hour — apply by
+      override with the portal's value. No fee is disclosed for the CE program.
+
+    categories: []
+
+    requirements:
+      - { certification: cisco/ccna, cycle_months: 36, total_credits: 30 }
+      - { certification: cisco/cyberops-associate, cycle_months: 36, total_credits: 30 }
+      - { certification: cisco/ccnp-security, cycle_months: 36, total_credits: 80 }
+      - { certification: cisco/ccnp-enterprise, cycle_months: 36, total_credits: 80 }
+      - { certification: cisco/ccie-security, cycle_months: 36, total_credits: 120 }
+
+    crediting: []
+
+    constraints:
+      - { type: any_of, params: { of: [{ type: cycle_total }, { type: recert_exam }] } }
+
+    relations:
+      - { from: cisco/ccnp-security, to: cisco/ccna, relation: earning_renews }
+      - { from: cisco/ccnp-enterprise, to: cisco/ccna, relation: earning_renews }
+      - { from: cisco/ccie-security, to: cisco/ccnp-security, relation: earning_renews }
+      - { from: cisco/ccie-security, to: cisco/ccna, relation: earning_renews }

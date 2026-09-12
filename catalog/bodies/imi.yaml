@@ -1,0 +1,128 @@
+# Identity Management Institute — membership-based maintenance: annual membership fee plus 60 CE hours per 3 years.
+schema: 1
+
+body:
+  id: imi
+  name: Identity Management Institute
+  website: https://identitymanagementinstitute.org
+  fee_scope: membership
+
+certifications:
+  - {
+      id: imi/cipa,
+      name: Certified Identity Protection Advisor,
+      abbreviation: CIPA,
+      credit_unit_label: CE hour,
+      expires: true,
+    }
+  - {
+      id: imi/cimp,
+      name: Certified Identity Management Professional,
+      abbreviation: CIMP,
+      credit_unit_label: CE hour,
+      expires: true,
+    }
+  - {
+      id: imi/ciam,
+      name: Certified Identity and Access Manager,
+      abbreviation: CIAM,
+      credit_unit_label: CE hour,
+      expires: true,
+    }
+  - {
+      id: imi/cige,
+      name: Certified Identity Governance Expert,
+      abbreviation: CIGE,
+      credit_unit_label: CE hour,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2025-01-01
+    verified_on: 2026-09-12
+    sources:
+      - url: https://identitymanagementinstitute.org/certification/
+        title: IMI — Identity Management Certification
+        retrieved_on: 2026-09-12
+        pointer: 'Continuing education requirement is 60 hours every 3 years; candidates must be members'
+      - url: https://identitymanagementinstitute.org/membership-renewal/
+        title: IMI — Membership Renewal
+        retrieved_on: 2026-09-12
+        pointer: 'annual renewal $95 (one certificate), $150 (two), $195 (three or more); membership must be renewed annually to keep certifications active; $50 late fee after a 3-month grace; 3 years inactive → reapply and re-examine'
+    notes: >-
+      Certifications stay active only while membership is renewed annually (fee scope membership). Fee encoded
+      at the single-certificate rate; tiers in fee_params. Continuing education is stated as 60 hours per 3
+      years without a published activity table; hours are credited 1:1 (VERIFY B14 — activity list is thin;
+      confirm with IMI by email if needed). The 3-month grace and $50 late fee are not modelled.
+
+    categories: []
+
+    requirements:
+      - {
+          certification: imi/cipa,
+          cycle_months: 36,
+          total_credits: 60,
+          fee: { amount: 95.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: imi/cimp,
+          cycle_months: 36,
+          total_credits: 60,
+          fee: { amount: 95.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: imi/ciam,
+          cycle_months: 36,
+          total_credits: 60,
+          fee: { amount: 95.00, currency: USD, period_months: 12 },
+        }
+      - {
+          certification: imi/cige,
+          cycle_months: 36,
+          total_credits: 60,
+          fee: { amount: 95.00, currency: USD, period_months: 12 },
+        }
+
+    crediting:
+      - {
+          activity_type: attend_training,
+          body_label: 'Continuing education (hours)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Continuing education (hours)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Continuing education (hours)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+        }
+      - {
+          activity_type: self_study_timed,
+          body_label: 'Continuing education (hours)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Continuing education (hours)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+        }
+
+    constraints:
+      - { type: cycle_total }
+      - { type: fee_paid }
+
+    relations: []

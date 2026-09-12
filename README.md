@@ -4,7 +4,7 @@ A single-owner web app that tracks continuing-education credits and maintenance 
 
 This is a personal project, entirely vibecoded with Claude. It exists because the author holds certifications from several bodies and got tired of spreadsheets. It is not a product, has no roadmap beyond the author's needs, and makes no promises about the accuracy of any rule figure. Read `NOTICE.md`.
 
-> Status: design complete, implementation in progress. Not yet usable.
+> Status: usable for the author's own tracking. Stages 0–4 complete; public release pending a Cloudflare deploy-button test.
 
 ## Why the activity-centric model matters
 
@@ -42,31 +42,65 @@ Nothing is applied silently. The app suggests; you confirm or override.
 - Portable backup and verified restore between the two deploy targets.
 - Backfill of already-submitted credits by CSV import.
 
-## Deploy
-
-One codebase, two targets. Business logic is pure and runtime-agnostic; each target supplies adapters for storage, scheduling, and auth. Anything that has no honest equivalent on one target is documented as degraded, never faked.
-
-### Cloudflare Workers (Workers Paid)
-
-Requires a Workers Paid plan. Free-plan CPU limits are too low for PDF extraction and password hashing; if you want the free option, use Docker. Deployment uses D1 for the database, R2 for evidence, Static Assets for the SPA, and one Cron Trigger for scheduled work. A "Deploy to Cloudflare" button is planned for the final stage. Until then:
-
-```
-npm run deploy
-```
-
-Deploys run from your own machine via `wrangler login`. No Cloudflare API token is ever stored in GitHub.
+## Quickstart
 
 ### Self-hosted (Docker Compose)
 
 ```
+git clone https://github.com/lotus-infosec/cpe-pct
+cd cpe-pct
 docker compose -f docker/compose.yml up -d
 ```
 
-Runs Node 22 with a libSQL database file and evidence on a named volume mounted at `/data`. No external services, no outbound calls except the webhooks you configure.
+Open `http://localhost:8787`. The first visit asks for an owner password. Data (SQLite file and evidence) lives on the `data` volume mounted at `/data`. No external services, no outbound calls except the webhooks you configure and the update check you press.
 
-### First run
+Fast development loop: `npm install`, then `npm run dev:node` and `npm run dev:web` (port 5173, API proxied).
 
-Both targets start with zero secrets. The first visit redirects to `/setup`, which creates the single owner account and generates the session signing key into the database.
+### Cloudflare Workers (Workers Paid)
+
+Requires a Workers Paid plan: the committed `limits.cpu_ms` is rejected on Free, and PDF extraction and password hashing need the headroom. D1 and R2 stay within their free allowances for a single user (D1 free: 5 GB, 100k writes/day; R2 free: 10 GB, egress free).
+
+```
+npm install
+npx wrangler login
+npx wrangler deploy        # first time: provisions the D1 database and R2 bucket by name
+npm run deploy             # every time after: gitleaks gate, build, apply migrations, deploy
+```
+
+Deploys run from your own machine. No Cloudflare token is stored anywhere. A "Deploy to Cloudflare" button is planned once it has been proven from a fresh account.
+
+## Parity
+
+| Capability          | Self-hosted                                   | Cloudflare                                      |
+| ------------------- | --------------------------------------------- | ----------------------------------------------- |
+| Database            | libSQL file (Drizzle)                         | D1 (Drizzle), same migrations folder            |
+| Evidence            | filesystem volume                             | R2                                              |
+| PDF text extraction | unpdf, inline with job fallback               | same                                            |
+| Background jobs     | jobs table + 15 s interval                    | jobs table + Cron Trigger                       |
+| Auth                | local password; optional trusted proxy header | local password; optional Cloudflare Access gate |
+| Notifications       | webhook, Discord, in-app                      | same                                            |
+| Backup / restore    | zip via API or `npm run backup`               | same, portable in both directions               |
+| Image OCR           | none                                          | none                                            |
+
+The full list of differences is in `docs/degradation.md`.
+
+## Backup and restore
+
+`GET /api/backup` returns one zip: a SQL dump of every table, a manifest with per-table checksums and every evidence hash, and the evidence files. Restore it into a fresh instance before setup, or into a running one with the wipe option; the restore verifies itself. From a terminal:
+
+```
+CPE_URL=http://localhost:8787 CPE_PASSWORD=... npm run backup -- today.zip
+CPE_URL=https://<worker>.workers.dev CPE_PASSWORD=... npm run restore -- today.zip
+npm run verify-restore -- today.zip
+```
+
+Backups are portable between the two targets in both directions.
+
+## Catalog
+
+Rules live in `catalog/bodies/*.yaml` as versioned, cited data (CC-BY-4.0). Twelve bodies are seeded: ISC2, CompTIA, ISACA, GIAC, EC-Council, IAPP, PMI, Cisco, AWS, Microsoft, TestOut, and IMI. Every number has a source URL and retrieval date; PDFs are hashed. Adding a body: `docs/catalog-contributing.md`.
+
+The only outbound call the app makes on its own is the **Check for catalog updates** button on the Certifications page, and only when you press it. It fetches exactly one file, `catalog/lock.json` from this repository's `main` branch, and compares version numbers. Nothing is sent. Updates arrive by redeploying or pulling a new image.
 
 ## Non-goals
 
@@ -92,7 +126,8 @@ These are out of scope and will be declined as contributions:
 - `SECURITY.md`: repository hygiene and vulnerability reporting
 - `NOTICE.md`: trademark disclaimer and licensing
 - `catalog/TEMPLATE.yaml`: the body rule file format
-- `docs/`: degradation list, export formats, and catalog contribution guide (added in the final stage)
+- `docs/degradation.md`, `docs/export-formats.md`, `docs/catalog-contributing.md`
+- `LICENSE` (MIT) and `catalog/README.md` (CC-BY-4.0 for the rule data)
 
 ## Disclaimer
 

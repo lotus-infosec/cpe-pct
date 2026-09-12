@@ -1,0 +1,28 @@
+{
+  "tables": {
+    "bodies": 12,
+    "certifications": 63,
+    "crediting_rules": 125,
+    "constraints": 45,
+    "cert_relations": 39,
+    "held_certifications": 2,
+    "cycles": 3,
+    "activities": 2,
+    "credit_applications": 2,
+    "payments": 2,
+    "memberships": 1
+  },
+  "checksums": {
+    "bodies": "b8fc44edec38f86f0555618e3fadd7c2bfb66b4c87c9bb5fbfc2359dfc6d3208",
+    "certifications": "87fb47a88a632dd0f9682d7c6fe5209af807660ab8bd2be877b8af15bb64d6bf",
+    "crediting_rules": "36ca6c9e4bef5a2158e7334065d798fa18d5da71d766decfb9f9ca9fdc6e71ca",
+    "constraints": "2e6df4ba9a90e5395fb3187684581a948b48ee2cbe9b94552bb8e66031fe2c58",
+    "cert_relations": "60223d3cb2f3dc28dce8e1fc37834a2c6f100224ae922fcc35097eef2dd77fbb",
+    "held_certifications": "884a322c3e9281d3f5b2009f92b9b0dda230fc299c01756deac93fbdc95c32db",
+    "cycles": "f3c3aa64b31c7064c1e507ca05d500cb849091d1e78daa008a2868e5d3ffee6c",
+    "activities": "634bf2f55c9476be4fd025fc2cd9c732b03df695eb12827524bc73934104768f",
+    "credit_applications": "9975caaf40508cba2c39bf53ab5d7f4d064afd812c65f68408966a7233192cbc",
+    "payments": "c7c825019262bcd84838f08e191c0a857eb6d239b7fc295962597750da636525",
+    "memberships": "dc3b06f4b019c22801d89ef837ce8037f17db14548ee2087433793717a46c33e"
+  }
+}

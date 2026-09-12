@@ -14,7 +14,7 @@ pre-commit:
           echo "Private file staged. Unstage it."; exit 1; fi
     typecheck:
       glob: '*.{ts,tsx}'
-      run: npx tsc --noEmit
+      run: npm run -s typecheck
 pre-push:
   commands:
     gitleaks-history:

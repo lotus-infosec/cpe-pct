@@ -1,0 +1,91 @@
+# Microsoft — annual renewal by a free online assessment during a six-month window. Fundamentals never expire.
+schema: 1
+
+body:
+  id: microsoft
+  name: Microsoft
+  website: https://learn.microsoft.com/credentials
+  fee_scope: none
+
+certifications:
+  - {
+      id: microsoft/az-900,
+      name: Microsoft Certified Azure Fundamentals,
+      abbreviation: AZ-900,
+      credit_unit_label: credit,
+      expires: false,
+    }
+  - {
+      id: microsoft/sc-900,
+      name: Microsoft Certified Security,
+      Compliance,
+      and Identity Fundamentals,
+      abbreviation: SC-900,
+      credit_unit_label: credit,
+      expires: false,
+    }
+  - {
+      id: microsoft/az-104,
+      name: Microsoft Certified Azure Administrator Associate,
+      abbreviation: AZ-104,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: microsoft/az-500,
+      name: Microsoft Certified Azure Security Engineer Associate,
+      abbreviation: AZ-500,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: microsoft/sc-200,
+      name: Microsoft Certified Security Operations Analyst Associate,
+      abbreviation: SC-200,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: microsoft/sc-100,
+      name: Microsoft Certified Cybersecurity Architect Expert,
+      abbreviation: SC-100,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: microsoft/az-305,
+      name: Microsoft Certified Azure Solutions Architect Expert,
+      abbreviation: AZ-305,
+      credit_unit_label: credit,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2025-01-14
+    verified_on: 2026-09-12
+    sources:
+      - url: https://learn.microsoft.com/en-us/credentials/certifications/renew-your-microsoft-certification
+        title: Microsoft Certification Renewal (page updated 2025-01-14)
+        retrieved_on: 2026-09-12
+        pointer: 'renewals free; six-month window; pass the online unproctored assessment before expiry; extended one year from the expiration date; Fundamentals do not expire'
+    notes: >-
+      One-year validity for associate, expert, and specialty certifications; renew free by passing the online
+      assessment any time in the six months before expiry (recert_exam). On success the certification extends
+      one year from its expiration date. Fundamentals certifications never expire. No fee.
+
+    categories: []
+
+    requirements:
+      - { certification: microsoft/az-104, cycle_months: 12, total_credits: 0 }
+      - { certification: microsoft/az-500, cycle_months: 12, total_credits: 0 }
+      - { certification: microsoft/sc-200, cycle_months: 12, total_credits: 0 }
+      - { certification: microsoft/sc-100, cycle_months: 12, total_credits: 0 }
+      - { certification: microsoft/az-305, cycle_months: 12, total_credits: 0 }
+
+    crediting: []
+
+    constraints:
+      - { type: recert_exam }
+
+    relations: []

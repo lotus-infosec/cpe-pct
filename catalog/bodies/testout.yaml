@@ -1,0 +1,76 @@
+# TestOut Pro — lifetime certifications, listed so they appear on the dashboard. The Pro line was discontinued
+# after CompTIA's acquisition of TestOut; existing certifications remain valid for life (secondary sources only).
+schema: 1
+
+body:
+  id: testout
+  name: TestOut (CompTIA)
+  website: https://www.comptia.org
+  fee_scope: none
+
+certifications:
+  - {
+      id: testout/security-pro,
+      name: TestOut Security Pro,
+      abbreviation: Security Pro,
+      credit_unit_label: credit,
+      expires: false,
+    }
+  - {
+      id: testout/network-pro,
+      name: TestOut Network Pro,
+      abbreviation: Network Pro,
+      credit_unit_label: credit,
+      expires: false,
+    }
+  - {
+      id: testout/ethical-hacker-pro,
+      name: TestOut Ethical Hacker Pro,
+      abbreviation: Ethical Hacker Pro,
+      credit_unit_label: credit,
+      expires: false,
+    }
+  - {
+      id: testout/pc-pro,
+      name: TestOut PC Pro,
+      abbreviation: PC Pro,
+      credit_unit_label: credit,
+      expires: false,
+    }
+  - {
+      id: testout/linux-pro,
+      name: TestOut Linux Pro,
+      abbreviation: Linux Pro,
+      credit_unit_label: credit,
+      expires: false,
+    }
+  - {
+      id: testout/cyberdefense-pro,
+      name: TestOut CyberDefense Pro,
+      abbreviation: CyberDefense Pro,
+      credit_unit_label: credit,
+      expires: false,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2019-01-01
+    verified_on: 2026-09-12
+    sources:
+      - url: https://www.azed.gov/sites/default/files/2019/08/SecurityPro%20Fact%20Sheet%20Form.pdf
+        title: TestOut Security Pro Certification Fact Sheet (Arizona Department of Education copy)
+        retrieved_on: 2026-09-12
+        pointer: "certification validity: lifetime (secondary source; TestOut's own FAQ page now redirects to comptia.org and returns 404)"
+      - url: https://help.comptia.org/hc/en-us/articles/27682256796052-Why-are-TestOut-Pro-Certifications-Being-Discontinued
+        title: CompTIA Help — Why are TestOut Pro Certifications Being Discontinued?
+        retrieved_on: 2026-09-12
+        pointer: 'Pro certifications replaced by a Certificate of Competency; existing Pro certifications are lifetime (article is bot-walled; wording from the search excerpt)'
+    notes: >-
+      No continuing education, no fee, no expiry. Both sources are secondary or indirect (VERIFY B13);
+      the issuer's own page no longer exists. Certifications are listed so the dashboard shows the full portfolio.
+
+    categories: []
+    requirements: []
+    crediting: []
+    constraints: []
+    relations: []

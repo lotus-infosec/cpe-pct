@@ -1,0 +1,191 @@
+# IAPP — parameters only, from the IAPP Certification CPE Policy v3.3.1 (effective 2026-04-07).
+schema: 1
+
+body:
+  id: iapp
+  name: IAPP
+  website: https://iapp.org
+  fee_scope: membership # one certification maintenance fee (or annual membership) per holder; terms align
+
+certifications:
+  - {
+      id: iapp/cipp-us,
+      name: Certified Information Privacy Professional/United States,
+      abbreviation: CIPP/US,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: iapp/cipp-e,
+      name: Certified Information Privacy Professional/Europe,
+      abbreviation: CIPP/E,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: iapp/cipm,
+      name: Certified Information Privacy Manager,
+      abbreviation: CIPM,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: iapp/cipt,
+      name: Certified Information Privacy Technologist,
+      abbreviation: CIPT,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+  - {
+      id: iapp/aigp,
+      name: Artificial Intelligence Governance Professional,
+      abbreviation: AIGP,
+      credit_unit_label: CPE,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2026-04-07
+    verified_on: 2026-09-12
+    sources:
+      - url: https://iapp.org/certify/cpe-policy/
+        title: IAPP Certification Continuing Professional Education Policy v3.3.1 (redirects to the PDF)
+        retrieved_on: 2026-09-12
+        sha256: ae131b89d28533fb38ed2a89a2439c8f29d8d50420640a4d53f476a3e6dbd764
+        pointer: 'p.4 two-year term, 20 CPEs per certification, CMF USD 250; p.5 carry-over 10; p.6-7 activity table with per-term maxima'
+      - url: https://store.iapp.org/certification-maintenance-fee/
+        title: IAPP Store — Certification Maintenance Fee
+        retrieved_on: 2026-09-12
+        pointer: '$250, every two years; included in membership'
+      - url: https://iapp.org/certify/faqs
+        title: IAPP Certification FAQs
+        retrieved_on: 2026-09-12
+        pointer: 'CMF USD 250 per term or membership USD 295 annually; suspension on non-compliance'
+    notes: >-
+      Two-year term ending on the last day of the month; 20 CPEs per certification per term; CPEs may be applied
+      to every relevant credential. CMF $250 per term or membership $295/yr (fee_params). Surplus of up to 10
+      CPEs earned in the final six months carries over (not modelled). Reading: 1 CPE per 40 pages / 10,000 words,
+      max 5 — item = one 40-page unit. Academic class: 3 CPEs per class hour, max 12. Presenting: 3 CPEs per hour
+      for preparation and first delivery, max 12. Instructing: 1 per hour, max 16. Non-IAPP training attendance:
+      1 per hour, max 12. Mentoring: 3 per mentorship. Article 2, book 10.
+
+    categories: []
+
+    requirements:
+      - {
+          certification: iapp/cipp-us,
+          cycle_months: 24,
+          total_credits: 20,
+          fee: { amount: 250.00, currency: USD, period_months: 24 },
+        }
+      - {
+          certification: iapp/cipp-e,
+          cycle_months: 24,
+          total_credits: 20,
+          fee: { amount: 250.00, currency: USD, period_months: 24 },
+        }
+      - {
+          certification: iapp/cipm,
+          cycle_months: 24,
+          total_credits: 20,
+          fee: { amount: 250.00, currency: USD, period_months: 24 },
+        }
+      - {
+          certification: iapp/cipt,
+          cycle_months: 24,
+          total_credits: 20,
+          fee: { amount: 250.00, currency: USD, period_months: 24 },
+        }
+      - {
+          certification: iapp/aigp,
+          cycle_months: 24,
+          total_credits: 20,
+          fee: { amount: 250.00, currency: USD, period_months: 24 },
+        }
+
+    crediting:
+      - {
+          activity_type: attend_conference,
+          body_label: 'Attendee: non-IAPP event or web conference',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Attendee: non-IAPP event or web conference',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+        }
+      - {
+          activity_type: attend_training,
+          body_label: 'Attendee: non-IAPP training course',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 12,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Attendee: academic class (3 CPEs per class hour)',
+          basis: per_minutes,
+          minutes_per_credit: 20,
+          rounding: exact,
+          cap_per_cycle: 12,
+        }
+      - {
+          activity_type: deliver_presentation,
+          body_label: 'Speaker/presenter: non-IAPP event (3 CPEs per hour, preparation and first delivery)',
+          basis: per_minutes,
+          minutes_per_credit: 20,
+          rounding: exact,
+          cap_per_cycle: 12,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Instructor: non-IAPP training course',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: exact,
+          cap_per_cycle: 16,
+        }
+      - {
+          activity_type: mentor,
+          body_label: 'Coaching/mentoring (3 CPEs per mentorship)',
+          basis: per_item,
+          credits_per_item: 3,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Author: general publications, newsletters, articles',
+          basis: per_item,
+          credits_per_item: 2,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Author: book (10; standalone chapter 5)',
+          basis: per_item,
+          credits_per_item: 10,
+        }
+      - {
+          activity_type: read_book,
+          body_label: 'Reading materials (1 CPE per 40 pages or 10,000 words; item = one 40-page unit)',
+          basis: per_item,
+          credits_per_item: 1,
+          cap_per_cycle: 5,
+        }
+      - {
+          activity_type: read_article,
+          body_label: 'Reading materials (1 CPE per 40 pages or 10,000 words; item = one 40-page unit)',
+          basis: per_item,
+          credits_per_item: 1,
+          cap_per_cycle: 5,
+        }
+
+    constraints:
+      - { type: cycle_total }
+      - { type: fee_paid }
+
+    relations: []

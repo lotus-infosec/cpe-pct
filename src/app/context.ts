@@ -1,5 +1,12 @@
 import type { Db } from '../db/client';
-import type { Clock, JobQueue, ObjectStore, Principal, TextExtractor } from '../ports';
+import type {
+  Authenticator,
+  Clock,
+  JobQueue,
+  ObjectStore,
+  Principal,
+  TextExtractor,
+} from '../ports';
 import type { LocalAuth } from '../adapters/shared/local-auth';
 
 export interface AppContext {
@@ -9,6 +16,11 @@ export interface AppContext {
   objectStore: ObjectStore;
   textExtractor: TextExtractor;
   jobQueue: JobQueue;
+  /**
+   * Optional second authenticator. 'gate': must ALSO pass (Cloudflare Access in front of LocalAuth).
+   * 'grant': its principal is sufficient on its own (trusted reverse-proxy header on self-hosted).
+   */
+  extraAuth?: { mode: 'gate' | 'grant'; authenticator: Authenticator } | undefined;
 }
 
 /** Evidence upload cap. Buffered in memory for hashing on both targets; keep it modest (VERIFY A2). */

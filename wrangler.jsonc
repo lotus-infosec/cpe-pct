@@ -28,6 +28,8 @@
       "bucket_name": "cpe-pct-evidence",
     },
   ],
+  // Optional Cloudflare Access gate (D-015). Set both to enable; leave empty to run LocalAuth alone.
+  "vars": { "CF_ACCESS_TEAM": "", "CF_ACCESS_AUD": "" },
   "triggers": {
     "crons": ["* * * * *"],
   },

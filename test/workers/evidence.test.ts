@@ -86,7 +86,8 @@ describe('evidence on workerd + D1 + R2', () => {
       { idempotencyKey: `extract_text:${ev.id}:test` },
     );
     const result = await tick(ctx, { maxJobs: 5, softDeadlineMs: 20_000 });
-    expect(result).toEqual({ picked: 1, done: 1, failed: 0 });
+    expect(result.failed).toBe(0);
+    expect(result.done).toBeGreaterThanOrEqual(1); // the tick also seeds the daily renewal_scan job
     const after = await db
       .select()
       .from(s.evidence)

@@ -1,0 +1,123 @@
+# AWS — recertification by exam only (renewal). No continuing-education credit total.
+schema: 1
+
+body:
+  id: aws
+  name: Amazon Web Services
+  website: https://aws.amazon.com/certification
+  fee_scope: none
+
+certifications:
+  - {
+      id: aws/cloud-practitioner,
+      name: AWS Certified Cloud Practitioner,
+      abbreviation: CLF,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: aws/solutions-architect-associate,
+      name: AWS Certified Solutions Architect – Associate,
+      abbreviation: SAA,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: aws/developer-associate,
+      name: AWS Certified Developer – Associate,
+      abbreviation: DVA,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: aws/cloudops-associate,
+      name: AWS Certified CloudOps Engineer – Associate,
+      abbreviation: SOA,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: aws/security-specialty,
+      name: AWS Certified Security – Specialty,
+      abbreviation: SCS,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: aws/solutions-architect-professional,
+      name: AWS Certified Solutions Architect – Professional,
+      abbreviation: SAP,
+      credit_unit_label: credit,
+      expires: true,
+    }
+  - {
+      id: aws/devops-engineer-professional,
+      name: AWS Certified DevOps Engineer – Professional,
+      abbreviation: DOP,
+      credit_unit_label: credit,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2025-01-01
+    verified_on: 2026-09-12
+    sources:
+      - url: https://aws.amazon.com/certification/recertification/
+        title: AWS Certification — Recertification
+        retrieved_on: 2026-09-12
+        pointer: 'renewal (3 years): retake the same exam or pass a higher-level exam; 50% discount voucher; maintenance (1 year) via Skill Builder subscription'
+    notes: >-
+      Three years, renewed by passing the latest version of the same exam or a higher-level exam (recert_exam).
+      Higher-level relations encoded as earning_renews. AWS also offers a one-year 'maintenance' extension
+      through paid Skill Builder activities — not modelled. No maintenance fee; the exam fee carries a 50% voucher.
+
+    categories: []
+
+    requirements:
+      - { certification: aws/cloud-practitioner, cycle_months: 36, total_credits: 0 }
+      - { certification: aws/solutions-architect-associate, cycle_months: 36, total_credits: 0 }
+      - { certification: aws/developer-associate, cycle_months: 36, total_credits: 0 }
+      - { certification: aws/cloudops-associate, cycle_months: 36, total_credits: 0 }
+      - { certification: aws/security-specialty, cycle_months: 36, total_credits: 0 }
+      - { certification: aws/solutions-architect-professional, cycle_months: 36, total_credits: 0 }
+      - { certification: aws/devops-engineer-professional, cycle_months: 36, total_credits: 0 }
+
+    crediting: []
+
+    constraints:
+      - { type: recert_exam }
+
+    relations:
+      - {
+          from: aws/solutions-architect-associate,
+          to: aws/cloud-practitioner,
+          relation: earning_renews,
+        }
+      - { from: aws/developer-associate, to: aws/cloud-practitioner, relation: earning_renews }
+      - { from: aws/cloudops-associate, to: aws/cloud-practitioner, relation: earning_renews }
+      - {
+          from: aws/solutions-architect-professional,
+          to: aws/cloud-practitioner,
+          relation: earning_renews,
+        }
+      - {
+          from: aws/devops-engineer-professional,
+          to: aws/cloud-practitioner,
+          relation: earning_renews,
+        }
+      - {
+          from: aws/solutions-architect-professional,
+          to: aws/solutions-architect-associate,
+          relation: earning_renews,
+        }
+      - {
+          from: aws/devops-engineer-professional,
+          to: aws/developer-associate,
+          relation: earning_renews,
+        }
+      - {
+          from: aws/devops-engineer-professional,
+          to: aws/cloudops-associate,
+          relation: earning_renews,
+        }

@@ -1,0 +1,201 @@
+# PMI — parameters only, from the CCR Handbook (last updated April 2026). Nested categories via parent_key.
+schema: 1
+
+body:
+  id: pmi
+  name: Project Management Institute
+  website: https://www.pmi.org
+  fee_scope: none # a renewal fee exists but the handbook publishes no amount ("subject to membership and regional pricing")
+
+certifications:
+  - {
+      id: pmi/pmp,
+      name: Project Management Professional,
+      abbreviation: PMP,
+      credit_unit_label: PDU,
+      expires: true,
+    }
+  - {
+      id: pmi/pmi-acp,
+      name: PMI Agile Certified Practitioner,
+      abbreviation: PMI-ACP,
+      credit_unit_label: PDU,
+      expires: true,
+    }
+  - {
+      id: pmi/capm,
+      name: Certified Associate in Project Management,
+      abbreviation: CAPM,
+      credit_unit_label: PDU,
+      expires: true,
+    }
+
+versions:
+  - version: 1
+    effective_from: 2026-04-01
+    verified_on: 2026-09-12
+    sources:
+      - url: https://www.pmi.org/-/media/pmi/documents/public/pdf/certifications/ccr-certification-requirements-handbook.pdf
+        title: PMI Continuing Certification Requirements (CCR) Handbook (last updated April 2026)
+        retrieved_on: 2026-09-12
+        sha256: 726b8c8aef7cb3e05d02f8857b2c0f28769cc40c1ca11ade9a0ed7dd0bd3e6e1
+        pointer: 'p.4 requirements table; p.5 Talent Triangle minimums; p.7 giving back maxima and working-as-a-practitioner cap; p.9 one PDU = one hour, 0.25 increments; p.16 fees subject to membership/regional pricing'
+    notes: >-
+      Three-year cycle from the exam pass date. Education is a minimum (35 / 18 / 9) with Talent Triangle
+      sub-minimums (8/8/8, 4/4/4, 2/2/2); Giving Back is a maximum (25 / 12 / 6) with a sub-cap for working
+      as a practitioner (8 / 4 / 2). One PDU = one hour, reported in 0.25 increments (floor_quarter chosen;
+      handbook shows 15 min = 0.25). Suggested credits land in the parent category 'education' or
+      'giving_back'; refine to the Talent Triangle area on the fan-out screen so the sub-minimums can be
+      tracked. Renewal fee amount not published in the handbook — not encoded (VERIFY B10).
+
+    categories:
+      - { key: education, name: Education }
+      - { key: wow, name: Ways of Working, parent_key: education }
+      - { key: ps, name: Power Skills, parent_key: education }
+      - { key: ba, name: Business Acumen, parent_key: education }
+      - { key: giving_back, name: Giving Back to the Profession }
+      - { key: volunteering, name: Volunteering, parent_key: giving_back }
+      - { key: creating_knowledge, name: Creating Knowledge, parent_key: giving_back }
+      - { key: practitioner, name: Working as a Practitioner, parent_key: giving_back }
+
+    requirements:
+      - { certification: pmi/pmp, cycle_months: 36, total_credits: 60 }
+      - { certification: pmi/pmi-acp, cycle_months: 36, total_credits: 30 }
+      - { certification: pmi/capm, cycle_months: 36, total_credits: 15 }
+
+    crediting:
+      - {
+          activity_type: attend_training,
+          body_label: 'Education — course or training',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: education,
+        }
+      - {
+          activity_type: attend_conference,
+          body_label: 'Education — organization meetings / events',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: education,
+        }
+      - {
+          activity_type: attend_webinar,
+          body_label: 'Education — online or digital media',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: education,
+        }
+      - {
+          activity_type: self_study_timed,
+          body_label: 'Education — read',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: education,
+        }
+      - {
+          activity_type: read_book,
+          body_label: 'Education — read',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: education,
+        }
+      - {
+          activity_type: read_article,
+          body_label: 'Education — read',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: education,
+        }
+      - {
+          activity_type: higher_education,
+          body_label: 'Education — course or training',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: education,
+        }
+      - {
+          activity_type: deliver_presentation,
+          body_label: 'Giving back — share knowledge (presenting)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: creating_knowledge,
+        }
+      - {
+          activity_type: deliver_training,
+          body_label: 'Giving back — share knowledge (teaching)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: creating_knowledge,
+        }
+      - {
+          activity_type: develop_content,
+          body_label: 'Giving back — create content',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: creating_knowledge,
+        }
+      - {
+          activity_type: publish_article,
+          body_label: 'Giving back — create content',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: creating_knowledge,
+        }
+      - {
+          activity_type: publish_book,
+          body_label: 'Giving back — create content',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: creating_knowledge,
+        }
+      - {
+          activity_type: mentor,
+          body_label: 'Giving back — volunteer (mentoring)',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: volunteering,
+        }
+      - {
+          activity_type: volunteer,
+          body_label: 'Giving back — volunteer',
+          basis: per_minutes,
+          minutes_per_credit: 60,
+          rounding: floor_quarter,
+          category: volunteering,
+        }
+
+    constraints:
+      - { type: cycle_total }
+      - { type: category_min, params: { category: education, min: 35 }, applies_to: pmi/pmp }
+      - { type: category_min, params: { category: wow, min: 8 }, applies_to: pmi/pmp }
+      - { type: category_min, params: { category: ps, min: 8 }, applies_to: pmi/pmp }
+      - { type: category_min, params: { category: ba, min: 8 }, applies_to: pmi/pmp }
+      - { type: category_max, params: { category: giving_back, max: 25 }, applies_to: pmi/pmp }
+      - { type: category_max, params: { category: practitioner, max: 8 }, applies_to: pmi/pmp }
+      - { type: category_min, params: { category: education, min: 18 }, applies_to: pmi/pmi-acp }
+      - { type: category_min, params: { category: wow, min: 4 }, applies_to: pmi/pmi-acp }
+      - { type: category_min, params: { category: ps, min: 4 }, applies_to: pmi/pmi-acp }
+      - { type: category_min, params: { category: ba, min: 4 }, applies_to: pmi/pmi-acp }
+      - { type: category_max, params: { category: giving_back, max: 12 }, applies_to: pmi/pmi-acp }
+      - { type: category_max, params: { category: practitioner, max: 4 }, applies_to: pmi/pmi-acp }
+      - { type: category_min, params: { category: education, min: 9 }, applies_to: pmi/capm }
+      - { type: category_min, params: { category: wow, min: 2 }, applies_to: pmi/capm }
+      - { type: category_min, params: { category: ps, min: 2 }, applies_to: pmi/capm }
+      - { type: category_min, params: { category: ba, min: 2 }, applies_to: pmi/capm }
+      - { type: category_max, params: { category: giving_back, max: 6 }, applies_to: pmi/capm }
+      - { type: category_max, params: { category: practitioner, max: 2 }, applies_to: pmi/capm }
+
+    relations: []

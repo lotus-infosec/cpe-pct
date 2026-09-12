@@ -17,6 +17,11 @@ import { jobsRoute } from './routes/jobs';
 import { runDueJobs } from '../adapters/shared/db-job-queue';
 import { jobHandlers } from './jobs/extract-text';
 import type { TickBudget } from '../ports';
+import { ensureRecurringJobs } from './jobs/renewal-scan';
+import { notificationsRoute, settingsRoute } from './routes/notifications';
+import { exportsRoute } from './routes/exports';
+import { backupRoute } from './routes/backup';
+import { catalogUpdates } from './routes/catalog-updates';
 
 export type { AppContext } from './context';
 export type App = ReturnType<typeof createApp>;
@@ -28,7 +33,16 @@ export function createApp(ctx: AppContext) {
 
   app.use('*', async (c, next) => {
     c.set('ctx', ctx);
-    c.set('principal', await ctx.auth.authenticate(c.req.raw));
+    let principal = await ctx.auth.authenticate(c.req.raw);
+    if (ctx.extraAuth) {
+      const extra = await ctx.extraAuth.authenticator.authenticate(c.req.raw);
+      if (ctx.extraAuth.mode === 'gate') {
+        // Access must have let the request through; without its assertion nothing is authenticated.
+        if (!extra && c.req.path.startsWith('/api/'))
+          return c.json({ error: 'access_required' }, 401);
+      } else if (!principal && extra) principal = extra;
+    }
+    c.set('principal', principal);
     await next();
   });
 
@@ -44,7 +58,11 @@ export function createApp(ctx: AppContext) {
 
   app.use('/api/*', async (c, next) => {
     const key = `${c.req.method} ${new URL(c.req.url).pathname}`;
-    if (!PUBLIC.has(key) && !c.get('principal')) return c.json({ error: 'unauthenticated' }, 401);
+    if (!PUBLIC.has(key) && !c.get('principal')) {
+      // A fresh, un-set-up instance may be restored from a backup; the backup carries the owner account.
+      if (key === 'POST /api/backup/restore' && !(await ctx.auth.isSetUp())) return next();
+      return c.json({ error: 'unauthenticated' }, 401);
+    }
     await next();
   });
 
@@ -57,6 +75,7 @@ export function createApp(ctx: AppContext) {
 
   app.route('/api', auth);
   app.route('/api/catalog', catalog);
+  app.route('/api/catalog/updates', catalogUpdates);
   app.route('/api/held', held);
   app.route('/api/memberships', memberships);
   app.route('/api/activities', activities);
@@ -68,6 +87,10 @@ export function createApp(ctx: AppContext) {
   app.route('/api/evidence', evidence);
   app.route('/api/activities', activityEvidenceRoute);
   app.route('/api/jobs', jobsRoute);
+  app.route('/api/notifications', notificationsRoute);
+  app.route('/api/settings', settingsRoute);
+  app.route('/api/exports', exportsRoute);
+  app.route('/api/backup', backupRoute);
 
   app.notFound((c) => c.json({ error: 'not_found' }, 404));
   app.onError((err, c) => {
@@ -80,6 +103,7 @@ export function createApp(ctx: AppContext) {
 }
 
 /** The one job runner, called by IntervalTickSource (Node) and scheduled() (Workers). */
-export function tick(ctx: AppContext, budget: TickBudget) {
+export async function tick(ctx: AppContext, budget: TickBudget) {
+  await ensureRecurringJobs(ctx);
   return runDueJobs(ctx.db, ctx.clock, jobHandlers(ctx), budget);
 }

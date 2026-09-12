@@ -29,6 +29,76 @@
       "when": 1789181614195,
       "tag": "0003_seed_isc2_v1",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1789242746684,
+      "tag": "0004_seed_aws_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1789242747148,
+      "tag": "0005_seed_cisco_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1789242747632,
+      "tag": "0006_seed_ec-council_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1789242748099,
+      "tag": "0007_seed_giac_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1789242748569,
+      "tag": "0008_seed_iapp_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1789242749042,
+      "tag": "0009_seed_imi_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1789242749510,
+      "tag": "0010_seed_isaca_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1789242749978,
+      "tag": "0011_seed_microsoft_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1789242750456,
+      "tag": "0012_seed_pmi_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1789242750933,
+      "tag": "0013_seed_testout_v1",
+      "breakpoints": true
     }
   ]
 }
