@@ -81,7 +81,12 @@ const lit = (v: unknown): string => {
   if (typeof v === 'number') return String(v);
   if (typeof v === 'bigint') return v.toString();
   if (typeof v === 'boolean') return v ? '1' : '0';
-  return `'${String(v).replace(/'/g, "''")}'`;
+  // One statement per line in dump.sql: control characters inside literals are emitted as char() calls.
+  const escaped = String(v)
+    .replace(/'/g, "''")
+    .replace(/\r/g, "'||char(13)||'")
+    .replace(/\n/g, "'||char(10)||'");
+  return `'${escaped}'`;
 };
 
 export async function snapshot(

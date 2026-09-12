@@ -82,10 +82,21 @@ describe('backup → fresh instance → restore → verify', () => {
       .get('set-cookie')!
       .split(';')[0]!;
     await seedOwnerWorld(a.ctx.db, clock.now().toISOString());
+    // A DRAFT activity so the linked upload writes a multi-line description (newline inside a literal).
+    const draft = (await (
+      await a.call('/api/activities', {
+        ...json({ title: 'Draft', occurredOn: '2024-06-01', activityType: 'other' }),
+        cookie,
+      })
+    ).json()) as { id: string };
     const fd = new FormData();
     fd.set('file', new Blob([pdf]), 'cert.pdf');
-    fd.set('activityId', 'a-new');
+    fd.set('activityId', draft.id);
     await a.call('/api/evidence', { method: 'POST', body: fd, cookie });
+    const withNl = (await (await a.call(`/api/activities/${draft.id}`, { cookie })).json()) as {
+      description: string;
+    };
+    expect(withNl.description).toContain('\n');
     await a.call('/api/notifications/scan', { ...json({}), cookie });
 
     const zipBytes = new Uint8Array(await (await a.call('/api/backup', { cookie })).arrayBuffer());
