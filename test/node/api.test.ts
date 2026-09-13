@@ -173,6 +173,20 @@ describe('activity → fan-out → applications → standing', () => {
     expect((ok.json['standings'] as any[]).length).toBe(3);
     expect((await call('GET', `/api/activities/${activityId}`)).json['status']).toBe('logged');
   });
+  it('rejects the same held cert twice in one payload', async () => {
+    // (activity, held cert) is unique; without the check the duplicate reached the batch and came
+    // back as a 500 SQLITE_CONSTRAINT instead of a validation error. Found by stress-seeding.
+    const r = await call('POST', `/api/activities/${activityId}/applications`, {
+      applications: [
+        { heldCertId: heldIds['cissp'], creditsX100: 325 },
+        { heldCertId: heldIds['cissp'], creditsX100: 325 },
+      ],
+    });
+    expect(r.status).toBe(400);
+    expect(r.json['error']).toBe('invalid_applications');
+    expect((r.json['details'] as string[]).join(' ')).toContain('listed more than once');
+  });
+
   it('`other` yields no suggestions and requires an override reason', async () => {
     const a = await call('POST', '/api/activities', {
       title: 'Something odd',
