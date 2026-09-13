@@ -12,33 +12,33 @@
     // Unmatched paths serve index.html (client-side routing). Navigation requests skip the
     // Worker by default, which would shadow /api/*; run_worker_first fixes that (VERIFY A10).
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"],
+    "run_worker_first": ["/api/*"]
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "cpe-pct",
       // Drizzle Kit output. wrangler reads top-level *.sql only; meta/ is ignored (VERIFY A3).
-      "migrations_dir": "src/db/migrations",
-    },
+      "migrations_dir": "src/db/migrations"
+    }
   ],
   "r2_buckets": [
     {
       "binding": "EVIDENCE",
-      "bucket_name": "cpe-pct-evidence",
-    },
+      "bucket_name": "cpe-pct-evidence"
+    }
   ],
   // Optional Cloudflare Access gate (D-015). Set both to enable; leave empty to run LocalAuth alone.
   "vars": { "CF_ACCESS_TEAM": "", "CF_ACCESS_AUD": "" },
   "triggers": {
-    "crons": ["* * * * *"],
+    "crons": ["* * * * *"]
   },
   // Workers Paid. Default is 30 s; stated explicitly so it is reviewable (VERIFY A1). Max 300000.
   "limits": {
-    "cpu_ms": 30000,
+    "cpu_ms": 30000
   },
   // Workers Logs stay in the deployer's own account; off by default, flip if you want them.
   "observability": {
-    "enabled": false,
-  },
+    "enabled": false
+  }
 }
