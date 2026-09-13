@@ -80,16 +80,6 @@
     "lefthook@2.1.12": true,
     "workerd@1.20260911.1": true
   },
-  "cloudflare": {
-    "bindings": {
-      "DB": {
-        "description": "D1 database holding certifications, activities, credit applications, evidence metadata, and settings. Migrations in src/db/migrations are applied by the deploy script."
-      },
-      "EVIDENCE": {
-        "description": "R2 bucket for uploaded evidence files (certificates, receipts) and generated export bundles. Keys are content hashes."
-      }
-    }
-  },
   "overrides": {
     "@esbuild-kit/core-utils": {
       "esbuild": "^0.25.0"
