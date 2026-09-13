@@ -181,7 +181,15 @@ export const activities = new Hono<Vars>()
       const suggestions = resolve(toDomain(a), ctx);
       const rows: (typeof s.creditApplications.$inferInsert)[] = [];
       const errors: string[] = [];
+      // One row per (activity, held cert) is a unique index; a repeated heldCertId in the payload
+      // would reach the batch and fail as a constraint error instead of a validation error.
+      const seen = new Set<string>();
       for (const app of c.req.valid('json').applications) {
+        if (seen.has(app.heldCertId)) {
+          errors.push(`${app.heldCertId}: listed more than once`);
+          continue;
+        }
+        seen.add(app.heldCertId);
         const sg = suggestions.find((x) => x.heldCertId === app.heldCertId && x.kind === 'credit');
         const cycle = ctx.cycles.find(
           (cy) =>
