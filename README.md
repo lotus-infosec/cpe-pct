@@ -74,6 +74,8 @@ npm run deploy             # build web assets, apply migrations to remote D1, de
 
 The first deploy provisions the D1 database and the R2 bucket by name; `wrangler.jsonc` carries no resource IDs, so nothing in this repository points at anyone's account.
 
+Optional: to put Cloudflare Access in front of the whole app, set `CF_ACCESS_TEAM` (your team domain) and `CF_ACCESS_AUD` (the application AUD) as Worker variables after deploying. The gate turns itself on when both are present, and sits in front of the password login rather than replacing it. They are not declared in `wrangler.jsonc`, because an empty-string variable there stops the Deploy to Cloudflare button from reading the repository at all.
+
 Deploys run from your own machine and no Cloudflare token is stored anywhere. `npm run release` is the same command behind a `gitleaks detect` sweep of the working tree, and it is how this repository is released; the gate sits outside `npm run deploy` because the button hands that script to Cloudflare's builder, which has no gitleaks binary.
 
 ## Parity
