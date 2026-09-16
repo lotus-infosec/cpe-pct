@@ -6,3 +6,4 @@ src/db/migrations
 package-lock.json
 CPETracker
 worker-configuration.d.ts
+button-test
