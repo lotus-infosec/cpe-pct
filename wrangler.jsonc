@@ -31,7 +31,7 @@
   // The optional Cloudflare Access gate (D-015) reads CF_ACCESS_TEAM and CF_ACCESS_AUD. They are
   // deliberately NOT declared here: empty-string values are the documented trigger for the deploy
   // button rejecting a repository (cloudflare/developer-platform#35). Set them after deploying,
-  // with `wrangler secret put` or as vars in the dashboard, and the gate turns itself on.
+  // with 'wrangler secret put' or as vars in the dashboard, and the gate turns itself on.
   "triggers": {
     "crons": ["* * * * *"]
   },

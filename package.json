@@ -10,7 +10,7 @@
   },
   "scripts": {
     "typecheck": "wrangler types && tsc -p tsconfig.json && tsc -p tsconfig.node.json && tsc -p web/tsconfig.json && tsc -p test/core/tsconfig.json && tsc -p test/node/tsconfig.json && tsc -p test/workers/tsconfig.json",
-    "prepare": "node -e \"if(require(\\\"fs\\\").existsSync(\\\".git\\\"))require(\\\"child_process\\\").execSync(\\\"npx lefthook install\\\",{stdio:\\\"inherit\\\"})\"",
+    "prepare": "node scripts/prepare.mjs",
     "dev:node": "tsx watch src/entry.node.ts",
     "dev:web": "vite --config web/vite.config.ts",
     "dev:cf": "wrangler dev",
