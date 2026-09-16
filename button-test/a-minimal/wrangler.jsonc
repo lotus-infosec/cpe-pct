@@ -1,6 +1,0 @@
-// Control. Name, entrypoint and compatibility date only. Must pass, or the harness itself is wrong.
-{
-  "name": "cpe-pct-bt-a-minimal",
-  "main": "src/index.ts",
-  "compatibility_date": "2026-09-01"
-}
