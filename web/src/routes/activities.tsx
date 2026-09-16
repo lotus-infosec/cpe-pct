@@ -3,7 +3,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
 import { Plus } from 'lucide-react';
 import { api, fmtCredits } from '@/lib/api';
-import { fetchAll, useList, useListQuery } from '@/lib/list';
+import { fetchAll, fmtCount, useList, useListQuery } from '@/lib/list';
+import {
+  BulkDeleteDialog,
+  ExportStatusLine,
+  PageCheckbox,
+  SelectionBar,
+  useActivitySelection,
+  useSelectionExport,
+  type ActivityFilterBody,
+} from '@/components/bulk-delete';
 import { options } from '@/lib/labels';
 import type { Activity, ActivityRow, ActivityType, Held } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -67,6 +76,15 @@ export function Activities() {
     mutationFn: (id: string) => api(`/api/activities/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries(),
   });
+  const filterBody: ActivityFilterBody = {
+    ...(list.q.trim() && { q: list.q.trim() }),
+    ...list.filters,
+  };
+  const sel = useActivitySelection(filterBody, data?.total);
+  const pageIds = data?.rows.map((r) => r.id) ?? [];
+  const [confirming, setConfirming] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const exp = useSelectionExport();
   const typeLabel = (key: string) => types.data?.find((t) => t.key === key)?.label ?? key;
   const abbr = (heldId: string) =>
     held.data?.find((h) => h.id === heldId)?.certification.abbreviation ?? '?';
@@ -119,6 +137,21 @@ export function Activities() {
         }
       />
       <LogActivityDialog open={logging} onClose={() => setLogging(false)} types={types.data} />
+      <BulkDeleteDialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        selection={sel.body}
+        onDeleted={(r) => {
+          setConfirming(false);
+          sel.clear();
+          setResult(
+            `Deleted ${fmtCount(r.deleted)} ${r.deleted === 1 ? 'activity' : 'activities'} and ${fmtCount(r.applicationsRemoved)} credit applications.` +
+              (r.refused.length
+                ? ` ${fmtCount(r.refused.length)} with submitted or accepted credit ${r.refused.length === 1 ? 'was' : 'were'} kept.`
+                : ''),
+          );
+        }}
+      />
 
       <Toolbar
         label="Activity filters"
@@ -152,6 +185,29 @@ export function Activities() {
       </Toolbar>
       <FilterChips chips={chips} onClearAll={list.clear} />
 
+      {result && (
+        <p role="status" className="flex items-center gap-2 text-sm text-ok">
+          {result}
+          <Button size="sm" variant="ghost" onClick={() => setResult(null)}>
+            Dismiss
+          </Button>
+        </p>
+      )}
+      {data && (
+        <SelectionBar
+          sel={sel}
+          pageIds={pageIds}
+          total={data.total}
+          narrowed={list.narrowed}
+          onDelete={() => {
+            setResult(null);
+            setConfirming(true);
+          }}
+          onExport={() => sel.body && exp.start.mutate(sel.body)}
+          exporting={exp.start.isPending || exp.status?.status === 'building'}
+        />
+      )}
+      <ExportStatusLine exp={exp} />
       {q.isPending && <Skeleton rows={8} />}
       {q.isError && <ErrorText error={q.error} />}
       <ErrorText error={remove.error} />
@@ -174,6 +230,9 @@ export function Activities() {
           <Table label="Activities">
             <THead>
               <tr>
+                <Th className="w-10">
+                  <PageCheckbox sel={sel} pageIds={pageIds} />
+                </Th>
                 {sortTh('title', 'Activity', 'asc')}
                 {sortTh('occurredOn', 'Date', 'desc')}
                 <Th>Type</Th>
@@ -187,7 +246,17 @@ export function Activities() {
             </THead>
             <TBody>
               {data.rows.map((a) => (
-                <Tr key={a.id}>
+                <Tr key={a.id} className={cn(sel.has(a.id) && 'bg-accent/5')}>
+                  <Td>
+                    <input
+                      type="checkbox"
+                      className="size-4 align-middle"
+                      checked={sel.has(a.id)}
+                      onChange={() => undefined}
+                      onClick={(e) => sel.toggle(a.id, pageIds, e)}
+                      aria-label={`Select ${a.title}`}
+                    />
+                  </Td>
                   <Td className="max-w-80">
                     <Link
                       className="block truncate font-medium text-fg underline-offset-2 hover:text-accent hover:underline"
