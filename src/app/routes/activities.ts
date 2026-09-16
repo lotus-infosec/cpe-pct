@@ -1,13 +1,14 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { desc, eq, inArray } from 'drizzle-orm';
+import { and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import * as s from '../../db/schema';
 import { newId, today, type Vars } from '../context';
 import { ACTIVITY_TYPES } from '../../core/domain/activity-types';
 import { resolve, standing } from '../../core/rules';
 import { resolveContext, standingContext } from '../rulesets';
 import { inRange } from '../../core/cycles/dates';
+import { isoDateParam, listQuery, offsetOf, orderBy, paged, searchAny, validList } from '../query';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const activityBody = z.object({
@@ -31,17 +32,83 @@ const toDomain = (a: typeof s.activities.$inferSelect) => ({
   relatedCertificationId: a.description?.match(/^related:(\S+)/)?.[1] ?? null,
 });
 
+const creditTotal = sql<number>`(SELECT COALESCE(SUM(${s.creditApplications.creditsX100}), 0) FROM ${s.creditApplications} WHERE ${s.creditApplications.activityId} = ${s.activities.id})`;
+const ACTIVITY_SORTS = {
+  occurredOn: s.activities.occurredOn,
+  title: sql`lower(${s.activities.title})`,
+  createdAt: s.activities.createdAt,
+  credits: creditTotal,
+} as const;
+const activityList = listQuery(
+  Object.keys(ACTIVITY_SORTS) as [keyof typeof ACTIVITY_SORTS],
+  { sort: 'occurredOn', dir: 'desc' },
+  {
+    type: z.enum(ACTIVITY_TYPES).optional(),
+    status: z.enum(['draft', 'logged']).optional(),
+    from: isoDateParam.optional(),
+    to: isoDateParam.optional(),
+  },
+);
+
 export const activities = new Hono<Vars>()
-  .get('/', async (c) => {
+  .get('/', validList(activityList), async (c) => {
     const { db } = c.get('ctx');
-    const rows = await db
-      .select()
-      .from(s.activities)
-      .orderBy(desc(s.activities.occurredOn), desc(s.activities.createdAt))
-      .all();
-    const apps = await db.select().from(s.creditApplications).all();
+    const p = c.req.valid('query');
+    const a = s.activities;
+    const where = and(
+      searchAny([a.title, a.provider, a.description], p.q),
+      p.type ? eq(a.activityType, p.type) : undefined,
+      p.status ? eq(a.status, p.status) : undefined,
+      p.from ? gte(a.occurredOn, p.from) : undefined,
+      p.to ? lte(a.occurredOn, p.to) : undefined,
+    );
+    const [count, rows] = await Promise.all([
+      db
+        .select({ n: sql<number>`count(*)` })
+        .from(a)
+        .where(where)
+        .get(),
+      db
+        .select()
+        .from(a)
+        .where(where)
+        .orderBy(...orderBy(ACTIVITY_SORTS[p.sort], a.id, p.dir))
+        .limit(p.per_page)
+        .offset(offsetOf(p))
+        .all(),
+    ]);
+    // Only what the list shows: credits per held certification. The full applications, with their
+    // explanations, are nearly nine tenths of the bytes and belong to the activity's own page.
+    const ca = s.creditApplications;
+    const apps = rows.length
+      ? await db
+          .select({
+            activityId: ca.activityId,
+            heldCertId: ca.heldCertId,
+            creditsX100: ca.creditsX100,
+          })
+          .from(ca)
+          .where(
+            inArray(
+              ca.activityId,
+              rows.map((r) => r.id),
+            ),
+          )
+          .all()
+      : [];
     return c.json(
-      rows.map((a) => ({ ...a, applications: apps.filter((x) => x.activityId === a.id) })),
+      paged(
+        rows.map((r) => {
+          const mine = apps.filter((x) => x.activityId === r.id);
+          return {
+            ...r,
+            creditTotalX100: mine.reduce((n, x) => n + x.creditsX100, 0),
+            appliedTo: Object.fromEntries(mine.map((x) => [x.heldCertId, x.creditsX100])),
+          };
+        }),
+        count?.n ?? 0,
+        p,
+      ),
     );
   })
   .post('/', zValidator('json', activityBody), async (c) => {
@@ -252,6 +319,24 @@ const TRANSITIONS: Record<string, string[]> = {
   accepted: ['submitted'],
 };
 
+// Lifecycle order, not alphabetical, so sorting by status reads as progress toward acceptance.
+const statusRank = sql`CASE ${s.creditApplications.status} WHEN ${'planned'} THEN 0 WHEN ${'claimed'} THEN 1 WHEN ${'submitted'} THEN 2 WHEN ${'accepted'} THEN 3 ELSE 4 END`;
+const APPLICATION_SORTS = {
+  occurredOn: s.activities.occurredOn,
+  credits: s.creditApplications.creditsX100,
+  status: statusRank,
+} as const;
+const applicationList = listQuery(
+  Object.keys(APPLICATION_SORTS) as [keyof typeof APPLICATION_SORTS],
+  { sort: 'occurredOn', dir: 'desc' },
+  {
+    cycleId: z.string().max(100).optional(),
+    heldCertId: z.string().max(100).optional(),
+    bodyId: z.string().max(100).optional(),
+    status: z.enum(['planned', 'claimed', 'submitted', 'accepted', 'rejected']).optional(),
+  },
+);
+
 export const applications = new Hono<Vars>()
   .patch(
     '/:id',
@@ -292,13 +377,53 @@ export const applications = new Hono<Vars>()
     await db.delete(s.creditApplications).where(eq(s.creditApplications.id, c.req.param('id')));
     return c.json({ ok: true });
   })
-  .get('/', async (c) => {
+  .get('/', validList(applicationList), async (c) => {
     const { db } = c.get('ctx');
-    const ids = c.req.query('cycleId');
-    const q = db.select().from(s.creditApplications);
+    const p = c.req.valid('query');
+    const ca = s.creditApplications;
+    const where = and(
+      p.cycleId ? eq(ca.cycleId, p.cycleId) : undefined,
+      p.heldCertId ? eq(ca.heldCertId, p.heldCertId) : undefined,
+      p.status ? eq(ca.status, p.status) : undefined,
+      p.bodyId ? eq(s.certifications.bodyId, p.bodyId) : undefined,
+      searchAny([s.activities.title], p.q),
+    );
+    const from = () =>
+      db
+        .select({
+          application: ca,
+          activity: {
+            id: s.activities.id,
+            title: s.activities.title,
+            occurredOn: s.activities.occurredOn,
+            activityType: s.activities.activityType,
+          },
+        })
+        .from(ca)
+        .innerJoin(s.activities, eq(s.activities.id, ca.activityId))
+        .innerJoin(s.heldCertifications, eq(s.heldCertifications.id, ca.heldCertId))
+        .innerJoin(s.certifications, eq(s.certifications.id, s.heldCertifications.certificationId));
+    const [count, rows] = await Promise.all([
+      db
+        .select({ n: sql<number>`count(*)` })
+        .from(ca)
+        .innerJoin(s.activities, eq(s.activities.id, ca.activityId))
+        .innerJoin(s.heldCertifications, eq(s.heldCertifications.id, ca.heldCertId))
+        .innerJoin(s.certifications, eq(s.certifications.id, s.heldCertifications.certificationId))
+        .where(where)
+        .get(),
+      from()
+        .where(where)
+        .orderBy(...orderBy(APPLICATION_SORTS[p.sort], ca.id, p.dir))
+        .limit(p.per_page)
+        .offset(offsetOf(p))
+        .all(),
+    ]);
     return c.json(
-      ids
-        ? await q.where(inArray(s.creditApplications.cycleId, ids.split(','))).all()
-        : await q.all(),
+      paged(
+        rows.map((r) => ({ ...r.application, activity: r.activity })),
+        count?.n ?? 0,
+        p,
+      ),
     );
   });

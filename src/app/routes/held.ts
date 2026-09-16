@@ -3,7 +3,9 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { eq, inArray } from 'drizzle-orm';
 import * as s from '../../db/schema';
-import { newId, type Vars } from '../context';
+import { newId, today, type Vars } from '../context';
+import { validList } from '../query';
+import { filterSortPage, heldListQuery, heldSummaries, needsStanding } from '../held-list';
 import { firstCycle } from '../../core/rules';
 import { latestRuleVersionId, loadRuleSet } from '../rulesets';
 
@@ -16,24 +18,24 @@ const heldBody = z.object({
   status: z.enum(['active', 'lapsed', 'retired', 'pursuing']).default('active'),
 });
 
+const heldList = heldListQuery({ sort: 'name', dir: 'asc' });
+
 export const held = new Hono<Vars>()
-  .get('/', async (c) => {
-    const db = c.get('ctx').db;
-    const rows = await db
-      .select({ held: s.heldCertifications, cert: s.certifications, body: s.bodies })
-      .from(s.heldCertifications)
-      .innerJoin(s.certifications, eq(s.certifications.id, s.heldCertifications.certificationId))
-      .innerJoin(s.bodies, eq(s.bodies.id, s.certifications.bodyId))
-      .all();
-    const cycles = await db.select().from(s.cycles).all();
-    return c.json(
-      rows.map((r) => ({
-        ...r.held,
-        certification: r.cert,
-        body: r.body,
-        cycles: cycles.filter((cy) => cy.heldCertId === r.held.id),
+  .get('/', validList(heldList), async (c) => {
+    const { db, clock } = c.get('ctx');
+    const p = c.req.valid('query');
+    const all = await heldSummaries(db, today(clock), { withStanding: needsStanding(p) });
+    const page = filterSortPage(all, p);
+    return c.json({
+      ...page,
+      rows: page.rows.map((x) => ({
+        ...x.held,
+        certification: x.certification,
+        body: x.body,
+        cycles: x.cycles,
+        derived: x.derived,
       })),
-    );
+    });
   })
   .post('/', zValidator('json', heldBody), async (c) => {
     const { db } = c.get('ctx');
