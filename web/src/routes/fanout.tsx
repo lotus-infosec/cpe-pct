@@ -118,7 +118,7 @@ export function FanoutPage() {
   });
 
   if (q.isPending) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (q.isError) return <p className="text-sm text-red-600">Not found.</p>;
+  if (q.isError) return <p className="text-sm text-bad">Not found.</p>;
   const a = q.data.activity;
   const update = (i: number, patch: Partial<Row>) =>
     setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
@@ -343,14 +343,13 @@ export function FanoutPage() {
         )}
         <div className="mt-3 flex items-center gap-3">
           <Button
+            variant="primary"
             onClick={() => apply.mutate()}
             disabled={blocked || apply.isPending || !rows.some((r) => r.include)}
           >
             Confirm and apply as claimed
           </Button>
-          {blocked && (
-            <span className="text-xs text-amber-700">A changed value needs a reason.</span>
-          )}
+          {blocked && <span className="text-xs text-warn">A changed value needs a reason.</span>}
           <ErrorText error={apply.error} />
         </div>
         {apply.data && (

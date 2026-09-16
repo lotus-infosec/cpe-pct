@@ -52,11 +52,15 @@ export function ImportPage() {
           <Field label="Name">
             <Input value={filename} onChange={(e) => setFilename(e.target.value)} />
           </Field>
-          <Button disabled={!csv.trim() || m.isPending} onClick={() => m.mutate()}>
+          <Button
+            variant="primary"
+            disabled={!csv.trim() || m.isPending}
+            onClick={() => m.mutate()}
+          >
             Import
           </Button>
           <ErrorText error={m.error} />
-          {m.data && <p className="text-sm text-emerald-700">Imported {m.data.rows} rows.</p>}
+          {m.data && <p className="text-sm text-ok">Imported {m.data.rows} rows.</p>}
         </div>
       </Card>
       <Card>

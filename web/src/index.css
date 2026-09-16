@@ -1,30 +1,158 @@
 @import 'tailwindcss';
 
-/* shadcn/ui tokens (zinc). Components are copied into src/components/ui as needed. */
+/*
+ * Design tokens. The only file in web/src allowed to contain a colour value.
+ *
+ * Palette "Slate & Ice" (D-037): desaturated blue-grey ground, one ice-blue accent used for state
+ * and never for decoration. Form language (D-040): translucent panels, 6/10/14px radii, one shadow
+ * reserved for overlays, and exactly one gradient, on progress fills.
+ */
+
+/* Fonts are self-hosted (D-038): no request ever leaves the instance to fetch them. */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/ibm-plex-sans-latin-wght.woff2') format('woff2');
+  font-weight: 100 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/ibm-plex-mono-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/ibm-plex-mono-latin-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/ibm-plex-mono-latin-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * Metric-matched fallbacks, so text does not reflow when the real fonts swap in. Sans values were
+ * measured from the Plex file with letter-frequency-weighted advance widths against Arial's
+ * published average; Plex Mono and Courier New are both 0.6em per glyph.
+ */
+@font-face {
+  font-family: 'IBM Plex Sans Fallback';
+  src: local('Arial'), local('Helvetica'), local('Liberation Sans');
+  size-adjust: 101.14%;
+  ascent-override: 101.34%;
+  descent-override: 27.19%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'IBM Plex Mono Fallback';
+  src: local('Courier New'), local('Liberation Mono');
+  size-adjust: 100%;
+  ascent-override: 102.5%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+}
+
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --border: oklch(0.92 0.004 286.32);
-  --radius: 0.625rem;
+  color-scheme: dark;
+
+  /* Palette */
+  --ground: #0d1117;
+  --raised: #151b23;
+  --hover: #1d242e;
+  --line: #262f3a;
+  --text: #d5dae1;
+  /* Lifted from #869099 so it clears 4.6:1 on every surface it can sit on, table headers included. */
+  --text-dim: #929ba3;
+  /* Not for text: cannot reach AA on a panel without becoming --text-dim. Icons beside a label,
+     disabled states and decoration only. */
+  --text-mute: #5d666f;
+  --accent: #7fd4ff;
+  --accent-dim: #4a9ec7;
+  --ok: #5cc98a;
+  --warn: #e8b44a;
+  /* Lifted from #e8635f to clear 4.6:1 inside a danger badge in a table inside a card, the most
+     deeply nested surface red text is expected to sit on. */
+  --bad: #ec7f7b;
+  /* Deliberately grey: the accent owns blue. Do not make this blue again. */
+  --info: #9aa6b2;
+
+  /* Form language */
+  --panel: color-mix(in srgb, white 5.5%, transparent);
+  --panel-strong: color-mix(in srgb, white 8.5%, transparent);
+  --hairline: color-mix(in srgb, white 12%, transparent);
+  --overlay-shadow: 0 24px 70px rgb(0 0 0 / 0.36);
+  --progress-fill: linear-gradient(90deg, var(--accent), var(--ok));
+  --row-height: 36px;
+  --duration: 120ms;
+
+  /*
+   * shadcn names kept as aliases of the palette, so routes written against them pick up the new
+   * look without a page rewrite. New code uses the palette names; these go as pages are rebuilt.
+   */
+  --background: var(--ground);
+  --foreground: var(--text);
+  --card: var(--panel);
+  --card-foreground: var(--text);
+  --primary: var(--accent);
+  --primary-foreground: var(--ground);
+  --muted: var(--panel-strong);
+  --muted-foreground: var(--text-dim);
+  --border: var(--hairline);
 }
-.dark {
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.92 0.004 286.32);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --border: oklch(1 0 0 / 10%);
-}
+
 @theme inline {
+  --font-sans: 'IBM Plex Sans', 'IBM Plex Sans Fallback', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', ui-monospace, monospace;
+
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 20px;
+  --text-base: 14px;
+  --text-base--line-height: 22px;
+  --text-lg: 16px;
+  --text-lg--line-height: 24px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+
+  --radius-sm: 6px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --radius-dialog: 14px;
+
+  --color-ground: var(--ground);
+  --color-raised: var(--raised);
+  --color-hover: var(--hover);
+  --color-line: var(--line);
+  --color-panel: var(--panel);
+  --color-panel-strong: var(--panel-strong);
+  --color-hairline: var(--hairline);
+  --color-fg: var(--text);
+  --color-dim: var(--text-dim);
+  --color-mute: var(--text-mute);
+  --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-info: var(--info);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -34,13 +162,56 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
-  --radius-lg: var(--radius);
+
+  --shadow-overlay: var(--overlay-shadow);
 }
+
+/* Numbers, identifiers and dates: mono with tabular figures, so a column of values lines up. */
+@utility num {
+  font-family: 'IBM Plex Mono', 'IBM Plex Mono Fallback', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
 @layer base {
   * {
     @apply border-border;
   }
+  html {
+    background-color: var(--ground);
+    /* Native checkboxes, radios and range inputs take the accent instead of the browser's blue. */
+    accent-color: var(--accent);
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-base text-foreground antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-semibold text-fg;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    transition-property: color, background-color, border-color;
+    transition-duration: var(--duration);
+    transition-timing-function: ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0ms !important;
+      animation-duration: 0ms !important;
+    }
   }
 }

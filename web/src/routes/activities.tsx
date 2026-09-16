@@ -132,12 +132,12 @@ export function Activities() {
             />
           </Field>
           {f.activityType === 'other' && (
-            <p className="text-xs text-amber-700">
+            <p className="text-xs text-warn">
               "Other" never gets automatic suggestions; every credit you apply will need a reason.
             </p>
           )}
           <ErrorText error={create.error} />
-          <Button type="submit" disabled={create.isPending}>
+          <Button variant="primary" type="submit" disabled={create.isPending}>
             Save and see fan-out
           </Button>
         </form>

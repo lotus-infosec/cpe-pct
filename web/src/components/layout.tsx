@@ -1,53 +1,216 @@
-import { NavLink, Outlet } from 'react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState, type ComponentType } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  BadgeCheck,
+  Bell,
+  DatabaseBackup,
+  FileDown,
+  LayoutDashboard,
+  ListChecks,
+  LogOut,
+  Menu,
+  Paperclip,
+  Settings,
+  Upload,
+  X,
+} from 'lucide-react';
 import { api } from '@/lib/api';
-import { Button } from './ui';
+import { cn } from '@/lib/utils';
 
-const links = [
-  ['/', 'Dashboard'],
-  ['/activities', 'Activities'],
-  ['/certifications', 'Certifications'],
-  ['/import', 'Import'],
-] as const;
+type Icon = ComponentType<{ className?: string; strokeWidth?: number; 'aria-hidden'?: boolean }>;
+type Item = { to: string; label: string; icon: Icon };
 
-export function Layout() {
+const groups: { label: string; items: Item[] }[] = [
+  {
+    label: 'Track',
+    items: [
+      { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+      { to: '/activities', label: 'Activities', icon: ListChecks },
+      { to: '/evidence', label: 'Evidence', icon: Paperclip },
+    ],
+  },
+  {
+    label: 'Manage',
+    items: [
+      { to: '/certifications', label: 'Certifications', icon: BadgeCheck },
+      { to: '/import', label: 'Import', icon: Upload },
+      { to: '/exports', label: 'Exports', icon: FileDown },
+    ],
+  },
+  {
+    label: 'System',
+    items: [
+      { to: '/notifications', label: 'Notifications', icon: Bell },
+      { to: '/settings', label: 'Settings', icon: Settings },
+      { to: '/backup', label: 'Backup', icon: DatabaseBackup },
+    ],
+  },
+];
+
+/** Unread count, sharing the Notifications page's query so marking one read updates both. */
+function useUnread() {
+  const q = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => api<{ status: 'pending' | 'sent' | 'read' }[]>('/api/notifications'),
+  });
+  return q.data?.filter((n) => n.status !== 'read').length ?? 0;
+}
+
+function Wordmark() {
+  return (
+    <NavLink to="/" className="rounded-control px-1 text-lg font-semibold tracking-tight text-fg">
+      CPE PCT
+    </NavLink>
+  );
+}
+
+function Count({ n }: { n: number }) {
+  if (n === 0) return null;
+  return (
+    <span className="num ml-auto rounded-control border border-hairline bg-panel-strong px-1.5 text-xs text-fg">
+      {n > 99 ? '99+' : n}
+      <span className="sr-only"> unread</span>
+    </span>
+  );
+}
+
+function Nav({ unread }: { unread: number }) {
+  return (
+    <nav aria-label="Primary" className="flex flex-col gap-5">
+      {groups.map((g) => (
+        <div key={g.label}>
+          <p className="mb-1.5 px-2.5 text-xs font-medium text-dim">{g.label}</p>
+          <ul className="flex flex-col gap-0.5">
+            {g.items.map(({ to, label, icon: Icon }) => (
+              <li key={to}>
+                <NavLink
+                  to={to}
+                  end={to === '/'}
+                  className={({ isActive }) =>
+                    cn(
+                      'relative flex h-8 items-center gap-2.5 rounded-control px-2.5 text-sm',
+                      isActive
+                        ? 'bg-panel-strong text-fg before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-accent'
+                        : 'text-dim hover:bg-panel hover:text-fg',
+                    )
+                  }
+                >
+                  <Icon aria-hidden className="size-4 shrink-0" strokeWidth={1.5} />
+                  {label}
+                  {to === '/notifications' && <Count n={unread} />}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+function LogOutButton({ className }: { className?: string }) {
   const qc = useQueryClient();
   const logout = useMutation({
     mutationFn: () => api('/api/logout', { method: 'POST' }),
     onSuccess: () => qc.invalidateQueries(),
   });
   return (
-    <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-4 sm:px-6">
-      <header className="mb-6 flex flex-wrap items-center gap-4 border-b pb-3">
-        <NavLink to="/" className="text-lg font-semibold">
-          CPE PCT
-        </NavLink>
-        <nav className="flex gap-1 text-sm">
-          {links.map(([to, label]) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/'}
-              className={({ isActive }) =>
-                `rounded px-2 py-1 ${isActive ? 'bg-muted font-medium' : 'text-muted-foreground hover:bg-muted'}`
-              }
-            >
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => logout.mutate()}>
-          Log out
-        </Button>
+    <button
+      type="button"
+      onClick={() => logout.mutate()}
+      className={cn(
+        'flex h-8 items-center gap-2.5 rounded-control px-2.5 text-sm text-dim hover:bg-panel hover:text-fg',
+        className,
+      )}
+    >
+      <LogOut aria-hidden className="size-4" strokeWidth={1.5} />
+      Log out
+    </button>
+  );
+}
+
+export function Layout() {
+  const unread = useUnread();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+  // Close the mobile menu after navigating, so the new page is not hidden behind it.
+  useEffect(() => setMenuOpen(false), [location.pathname]);
+
+  return (
+    <div className="min-h-screen lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <a
+        href="#main"
+        className="sr-only rounded-control bg-accent px-3 py-2 text-ground focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
+      >
+        Skip to content
+      </a>
+
+      {/* Desktop sidebar */}
+      <aside className="sticky top-0 hidden h-screen flex-col gap-6 overflow-y-auto border-r border-hairline px-3 py-5 lg:flex">
+        <div className="px-1.5">
+          <Wordmark />
+        </div>
+        <Nav unread={unread} />
+        <div className="mt-auto border-t border-hairline pt-3">
+          <LogOutButton className="w-full" />
+        </div>
+      </aside>
+
+      {/* Top bar below 1024px */}
+      <header className="sticky top-0 z-40 border-b border-hairline bg-ground/90 backdrop-blur lg:hidden">
+        <div className="flex h-14 items-center gap-2 px-4">
+          <Wordmark />
+          <NavLink
+            to="/notifications"
+            className="ml-auto flex h-9 items-center gap-1.5 rounded-control px-2.5 text-dim hover:bg-panel hover:text-fg"
+          >
+            <Bell aria-hidden className="size-4" strokeWidth={1.5} />
+            <span className="sr-only">Notifications</span>
+            {unread > 0 && (
+              <span className="num text-xs text-fg">
+                {unread > 99 ? '99+' : unread}
+                <span className="sr-only"> unread</span>
+              </span>
+            )}
+          </NavLink>
+          <button
+            type="button"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            onClick={() => setMenuOpen((o) => !o)}
+            className="flex size-9 items-center justify-center rounded-control text-dim hover:bg-panel hover:text-fg"
+          >
+            {menuOpen ? (
+              <X aria-hidden className="size-5" strokeWidth={1.5} />
+            ) : (
+              <Menu aria-hidden className="size-5" strokeWidth={1.5} />
+            )}
+            <span className="sr-only">{menuOpen ? 'Close menu' : 'Open menu'}</span>
+          </button>
+        </div>
+        <div
+          id="mobile-nav"
+          hidden={!menuOpen}
+          className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-hairline px-3 py-4"
+        >
+          <Nav unread={unread} />
+          <div className="mt-5 border-t border-hairline pt-3">
+            <LogOutButton className="w-full" />
+          </div>
+        </div>
       </header>
-      <main className="flex-1">
-        <Outlet />
-      </main>
-      <footer className="mt-10 border-t pt-3 text-xs text-muted-foreground">
-        Not affiliated with or endorsed by any certifying body. Certification names are trademarks
-        of their respective owners. Rule data is a best-effort transcription; the issuer's current
-        policy governs. No automated submission, ever.
-      </footer>
+
+      <div className="flex min-w-0 flex-col">
+        <main id="main" className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-6 sm:px-6 lg:py-8">
+          <Outlet />
+        </main>
+        <footer className="mx-auto w-full max-w-[1280px] border-t border-hairline px-4 py-4 text-xs text-dim sm:px-6">
+          Not affiliated with or endorsed by any certifying body. Certification names are trademarks
+          of their respective owners. Rule data is a best-effort transcription; the issuer's current
+          policy governs. No automated submission, ever.
+        </footer>
+      </div>
     </div>
   );
 }

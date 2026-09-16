@@ -16,7 +16,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     enabled: setup.data?.setUp === true,
   });
   if (setup.isPending) return <p className="p-6 text-sm text-muted-foreground">Loading…</p>;
-  if (setup.isError) return <p className="p-6 text-sm text-red-600">Cannot reach the API.</p>;
+  if (setup.isError) return <p className="p-6 text-sm text-bad">Cannot reach the API.</p>;
   if (!setup.data.setUp) return <PasswordForm mode="setup" />;
   if (me.isPending) return <p className="p-6 text-sm text-muted-foreground">Loading…</p>;
   if (me.isError) return <PasswordForm mode="login" />;
@@ -68,10 +68,10 @@ function PasswordForm({ mode }: { mode: 'setup' | 'login' }) {
             </Field>
           )}
           {mode === 'setup' && confirm && confirm !== password && (
-            <p className="text-xs text-red-600">Passwords differ.</p>
+            <p className="text-xs text-bad">Passwords differ.</p>
           )}
           <ErrorText error={m.error} />
-          <Button type="submit" disabled={m.isPending || password.length < 12}>
+          <Button variant="primary" type="submit" disabled={m.isPending || password.length < 12}>
             {mode === 'setup' ? 'Create owner account' : 'Log in'}
           </Button>
         </form>
