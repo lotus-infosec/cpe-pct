@@ -1,0 +1,21 @@
+// R2 binding, cron trigger, limits, observability off.
+{
+  "name": "cpe-pct-bt-f-misc",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "r2_buckets": [
+    {
+      "binding": "EVIDENCE",
+      "bucket_name": "cpe-pct-button-test-evidence"
+    }
+  ],
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+  "limits": {
+    "cpu_ms": 30000
+  },
+  "observability": {
+    "enabled": false
+  }
+}

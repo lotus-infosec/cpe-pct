@@ -1,0 +1,13 @@
+// D1 binding exactly as the real config: no database_id, with migrations_dir.
+{
+  "name": "cpe-pct-bt-c-d1-no-id",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cpe-pct-button-test",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
