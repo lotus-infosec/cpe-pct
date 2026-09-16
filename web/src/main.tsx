@@ -9,6 +9,7 @@ import { Certifications } from './routes/certifications';
 import { Activities } from './routes/activities';
 import { FanoutPage } from './routes/fanout';
 import { CyclePage } from './routes/cycle';
+import { ApplicationsPage } from './routes/applications';
 import { ImportPage } from './routes/import';
 import { AddEvidencePage } from './components/evidence';
 import { NotificationsPage, SettingsPage } from './routes/notifications';
@@ -31,6 +32,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="activities" element={<Activities />} />
               <Route path="activities/:id" element={<FanoutPage />} />
               <Route path="cycles/:id" element={<CyclePage />} />
+              <Route path="applications" element={<ApplicationsPage />} />
               <Route path="import" element={<ImportPage />} />
               <Route path="evidence" element={<AddEvidencePage />} />
               <Route path="notifications" element={<NotificationsPage />} />

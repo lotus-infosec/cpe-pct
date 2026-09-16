@@ -40,6 +40,18 @@ export interface Cycle {
   ruleVersionId: string;
   status: 'open' | 'renewed' | 'lapsed';
 }
+export type StandingBucket = 'overdue' | 'at_risk' | 'lapsed' | 'compliant' | 'untracked';
+export type ExpiryBucket = 'overdue' | '30' | '90' | '180' | '365' | 'beyond' | 'none';
+export type ProgressBucket = 'none' | 'under_half' | 'over_half' | 'met' | 'surplus';
+/** Computed by the server for filtering and sorting, so the interface never re-derives them. */
+export interface Derived {
+  daysToExpiry: number | null;
+  expiry: ExpiryBucket;
+  standing: StandingBucket | null;
+  earnedX100: number | null;
+  requiredX100: number | null;
+  progress: ProgressBucket | null;
+}
 export interface Held {
   id: string;
   certificationId: string;
@@ -50,6 +62,7 @@ export interface Held {
   certification: Certification;
   body: Body;
   cycles: Cycle[];
+  derived: Derived;
 }
 export interface Totals {
   accepted: number;
@@ -87,7 +100,8 @@ export interface Standing {
   projectedAtCycleEnd: string[];
 }
 export interface DashboardItem {
-  held: Omit<Held, 'certification' | 'body' | 'cycles'>;
+  held: Omit<Held, 'certification' | 'body' | 'cycles' | 'derived'>;
+  derived: Derived;
   certification: Certification;
   body: Body;
   cycle: Cycle | null;
@@ -116,6 +130,10 @@ export interface Application {
   overrideReason: string | null;
   explanation: { explain: string[]; warnings: string[]; coveredBy?: string | null } | null;
 }
+/** A row of GET /api/applications: the application with the activity it came from. */
+export interface ApplicationRow extends Application {
+  activity: { id: string; title: string; occurredOn: string; activityType: string };
+}
 export interface Activity {
   id: string;
   title: string;
@@ -129,6 +147,11 @@ export interface Activity {
   status: 'draft' | 'logged';
   createdAt: string;
   applications: Application[];
+}
+/** A row of GET /api/activities: credits per held certification id instead of full applications. */
+export interface ActivityRow extends Omit<Activity, 'applications'> {
+  creditTotalX100: number;
+  appliedTo: Record<string, number>;
 }
 export interface Suggestion {
   heldCertId: string;

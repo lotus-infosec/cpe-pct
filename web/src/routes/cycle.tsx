@@ -2,15 +2,30 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
 import { api, fmtCredits, fmtMoney } from '@/lib/api';
-import type {
-  Activity,
-  Application,
-  ConstraintResult,
-  Held,
-  Membership,
-  Standing,
-} from '@/lib/types';
-import { Badge, Button, Card, ErrorText, Field, Input } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import { fetchAll, useList, useListQuery } from '@/lib/list';
+import { APPLICATION_STATUS, options } from '@/lib/labels';
+import type { ApplicationRow, ConstraintResult, Held, Membership, Standing } from '@/lib/types';
+import {
+  Badge,
+  Button,
+  Card,
+  ErrorText,
+  Field,
+  FilterSelect,
+  Input,
+  ListEmpty,
+  Pagination,
+  PerPageSelect,
+  ResultCount,
+  SearchField,
+  Skeleton,
+  SortableTh,
+  Toolbar,
+} from '@/components/ui';
+
+const APP_SORTS = ['occurredOn', 'credits', 'status'] as const;
+type AppSort = (typeof APP_SORTS)[number];
 
 interface FeePeriod {
   targetType: 'cycle' | 'membership';
@@ -45,15 +60,22 @@ export function CyclePage() {
     queryKey: ['standing', id],
     queryFn: () => api<Standing>(`/api/cycles/${id}/standing`),
   });
-  const held = useQuery({ queryKey: ['held'], queryFn: () => api<Held[]>('/api/held') });
-  const apps = useQuery({
-    queryKey: ['applications', id],
-    queryFn: () => api<Application[]>(`/api/applications?cycleId=${id}`),
+  const held = useQuery({
+    queryKey: ['held', 'all'],
+    queryFn: () => fetchAll<Held>('/api/held?view=basic'),
   });
-  const acts = useQuery({
-    queryKey: ['activities'],
-    queryFn: () => api<Activity[]>('/api/activities'),
+  const list = useList({
+    sorts: APP_SORTS,
+    defaultSort: 'occurredOn',
+    defaultDir: 'desc',
+    filters: { status: Object.keys(APPLICATION_STATUS) },
+    fixed: { cycleId: id },
   });
+  const apps = useListQuery<ApplicationRow, AppSort, 'status'>(
+    'applications',
+    '/api/applications',
+    list,
+  );
   const memberships = useQuery({
     queryKey: ['memberships'],
     queryFn: () => api<Membership[]>('/api/memberships'),
@@ -298,135 +320,203 @@ export function CyclePage() {
           You submit to the issuer yourself; record the outcome here. claimed → submitted → accepted
           / rejected.
         </p>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="py-1 pr-2">Activity</th>
-                <th className="pr-2">Date</th>
-                <th className="pr-2">Credits</th>
-                <th className="pr-2">Cat.</th>
-                <th className="pr-2">Status</th>
-                <th className="pr-2">Issuer ref.</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {apps.data?.map((ap) => {
-                const act = acts.data?.find((a) => a.id === ap.activityId);
-                return (
-                  <tr key={ap.id} className="border-t">
-                    <td className="py-1 pr-2">
-                      <Link className="underline" to={`/activities/${ap.activityId}`}>
-                        {act?.title ?? ap.activityId}
-                      </Link>
-                      {ap.overrideReason && (
-                        <span
-                          className="ml-1 text-[11px] text-muted-foreground"
-                          title={ap.overrideReason}
-                        >
-                          (override)
-                        </span>
-                      )}
-                    </td>
-                    <td className="pr-2 text-xs text-muted-foreground">{act?.occurredOn}</td>
-                    <td className="pr-2 tabular-nums">
-                      {fmtCredits(ap.creditsX100)}
-                      {ap.suggestedCreditsX100 != null &&
-                        ap.suggestedCreditsX100 !== ap.creditsX100 && (
-                          <span className="text-[11px] text-muted-foreground">
-                            {' '}
-                            (suggested {fmtCredits(ap.suggestedCreditsX100)})
+        <Toolbar
+          label="Credit application filters"
+          className="mb-3"
+          end={<ResultCount page={list.page} perPage={list.perPage} total={apps.data?.total} />}
+        >
+          <SearchField
+            label="Search credit applications"
+            placeholder="Activity title"
+            value={list.q}
+            onCommit={(v) => list.set({ q: v })}
+          />
+          <FilterSelect
+            label="Status"
+            value={list.filters.status}
+            options={options(APPLICATION_STATUS)}
+            onChange={(v) => list.set({ status: v })}
+          />
+          <PerPageSelect value={list.perPage} onChange={(n) => list.set({ per_page: n })} />
+        </Toolbar>
+        {apps.isPending && <Skeleton rows={4} />}
+        {apps.data && apps.data.total === 0 && (
+          <ListEmpty
+            narrowed={list.narrowed}
+            onClear={list.clear}
+            noun="credit applications"
+            emptyTitle="No credits applied to this cycle yet"
+            emptyDescription="Log an activity and confirm its fan-out to apply credits here."
+          />
+        )}
+        {apps.data && apps.data.rows.length > 0 && (
+          <div
+            className={cn('relative mb-3 overflow-x-auto', apps.isPlaceholderData && 'opacity-60')}
+          >
+            <table className="w-full text-sm">
+              <caption className="sr-only">Credit applications in this cycle</caption>
+              <thead className="text-left text-xs text-muted-foreground">
+                <tr>
+                  <th scope="col" className="py-1 pr-2">
+                    Activity
+                  </th>
+                  <SortableTh
+                    active={list.sort === 'occurredOn'}
+                    direction={list.dir}
+                    onSort={() => list.sortBy('occurredOn', 'desc')}
+                  >
+                    Date
+                  </SortableTh>
+                  <SortableTh
+                    active={list.sort === 'credits'}
+                    direction={list.dir}
+                    onSort={() => list.sortBy('credits', 'desc')}
+                  >
+                    Credits
+                  </SortableTh>
+                  <th scope="col" className="pr-2">
+                    Cat.
+                  </th>
+                  <SortableTh
+                    active={list.sort === 'status'}
+                    direction={list.dir}
+                    onSort={() => list.sortBy('status')}
+                  >
+                    Status
+                  </SortableTh>
+                  <th scope="col" className="pr-2">
+                    Issuer ref.
+                  </th>
+                  <th scope="col">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {apps.data.rows.map((ap) => {
+                  return (
+                    <tr key={ap.id} className="border-t">
+                      <td className="py-1 pr-2">
+                        <Link className="underline" to={`/activities/${ap.activityId}`}>
+                          {ap.activity.title}
+                        </Link>
+                        {ap.overrideReason && (
+                          <span
+                            className="ml-1 text-[11px] text-muted-foreground"
+                            title={ap.overrideReason}
+                          >
+                            (override)
                           </span>
                         )}
-                    </td>
-                    <td className="pr-2">{ap.categoryKey ?? '—'}</td>
-                    <td className="pr-2">
-                      <Badge
-                        tone={
-                          ap.status === 'accepted'
-                            ? 'ok'
-                            : ap.status === 'rejected'
-                              ? 'bad'
-                              : ap.status === 'submitted'
-                                ? 'warn'
-                                : 'muted'
-                        }
-                      >
-                        {ap.status}
-                      </Badge>
-                    </td>
-                    <td className="pr-2">
-                      {ap.issuerReference ??
-                        (ap.status === 'claimed' || ap.status === 'submitted' ? (
-                          <Input
-                            className="h-7 w-28 text-xs"
-                            placeholder="ref"
-                            value={refs[ap.id] ?? ''}
-                            onChange={(e) => setRefs({ ...refs, [ap.id]: e.target.value })}
-                          />
-                        ) : (
-                          '—'
-                        ))}
-                    </td>
-                    <td className="space-x-1 whitespace-nowrap">
-                      {ap.status === 'claimed' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            patch.mutate({
-                              id: ap.id,
-                              status: 'submitted',
-                              issuerReference: refs[ap.id],
-                            })
+                      </td>
+                      <td className="num pr-2 text-xs text-muted-foreground">
+                        {ap.activity.occurredOn}
+                      </td>
+                      <td className="pr-2 tabular-nums">
+                        {fmtCredits(ap.creditsX100)}
+                        {ap.suggestedCreditsX100 != null &&
+                          ap.suggestedCreditsX100 !== ap.creditsX100 && (
+                            <span className="text-[11px] text-muted-foreground">
+                              {' '}
+                              (suggested {fmtCredits(ap.suggestedCreditsX100)})
+                            </span>
+                          )}
+                      </td>
+                      <td className="pr-2">{ap.categoryKey ?? '—'}</td>
+                      <td className="pr-2">
+                        <Badge
+                          tone={
+                            ap.status === 'accepted'
+                              ? 'ok'
+                              : ap.status === 'rejected'
+                                ? 'bad'
+                                : ap.status === 'submitted'
+                                  ? 'warn'
+                                  : 'muted'
                           }
                         >
-                          submitted
-                        </Button>
-                      )}
-                      {ap.status === 'submitted' && (
-                        <>
+                          {ap.status}
+                        </Badge>
+                      </td>
+                      <td className="pr-2">
+                        {ap.issuerReference ??
+                          (ap.status === 'claimed' || ap.status === 'submitted' ? (
+                            <Input
+                              className="h-7 w-28 text-xs"
+                              placeholder="ref"
+                              value={refs[ap.id] ?? ''}
+                              onChange={(e) => setRefs({ ...refs, [ap.id]: e.target.value })}
+                            />
+                          ) : (
+                            '—'
+                          ))}
+                      </td>
+                      <td className="space-x-1 whitespace-nowrap">
+                        {ap.status === 'claimed' && (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() =>
                               patch.mutate({
                                 id: ap.id,
-                                status: 'accepted',
+                                status: 'submitted',
                                 issuerReference: refs[ap.id],
                               })
                             }
                           >
-                            accepted
+                            submitted
                           </Button>
+                        )}
+                        {ap.status === 'submitted' && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                patch.mutate({
+                                  id: ap.id,
+                                  status: 'accepted',
+                                  issuerReference: refs[ap.id],
+                                })
+                              }
+                            >
+                              accepted
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => patch.mutate({ id: ap.id, status: 'rejected' })}
+                            >
+                              rejected
+                            </Button>
+                          </>
+                        )}
+                        {ap.status === 'rejected' && (
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => patch.mutate({ id: ap.id, status: 'rejected' })}
+                            onClick={() => patch.mutate({ id: ap.id, status: 'claimed' })}
                           >
-                            rejected
+                            re-claim
                           </Button>
-                        </>
-                      )}
-                      {ap.status === 'rejected' && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => patch.mutate({ id: ap.id, status: 'claimed' })}
-                        >
-                          re-claim
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        {apps.data?.length === 0 && (
-          <p className="text-sm text-muted-foreground">No credits applied to this cycle yet.</p>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {apps.data && (
+          <Pagination
+            page={list.page}
+            pages={apps.data.pages}
+            perPage={list.perPage}
+            total={apps.data.total}
+            hrefFor={list.hrefFor}
+            label="Credit application pages"
+          />
         )}
         <ErrorText error={patch.error} />
       </Card>

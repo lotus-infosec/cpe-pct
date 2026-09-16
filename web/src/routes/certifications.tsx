@@ -1,9 +1,38 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import { api, fmtMoney } from '@/lib/api';
-import type { Body, Held, Membership } from '@/lib/types';
-import { Badge, Button, Card, ErrorText, Field, Input, Select } from '@/components/ui';
+import { api, fmtCredits, fmtMoney } from '@/lib/api';
+import { fmtCount, useList, useListQuery } from '@/lib/list';
+import { EXPIRY, PROGRESS, STANDING, options } from '@/lib/labels';
+import type { Body, Held, Membership, StandingBucket } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import {
+  Badge,
+  Button,
+  Card,
+  ErrorText,
+  Field,
+  FilterChips,
+  FilterSelect,
+  Input,
+  ListEmpty,
+  PageHeader,
+  Pagination,
+  PerPageSelect,
+  ResultCount,
+  SearchField,
+  Select,
+  Skeleton,
+  SortableTh,
+  Table,
+  TBody,
+  Td,
+  Th,
+  THead,
+  Toolbar,
+  Tr,
+  type Chip,
+} from '@/components/ui';
 
 interface UpdateCheck {
   url: string;
@@ -18,7 +47,6 @@ export function Certifications() {
     queryKey: ['catalog'],
     queryFn: () => api<{ bodies: Body[] }>('/api/catalog'),
   });
-  const held = useQuery({ queryKey: ['held'], queryFn: () => api<Held[]>('/api/held') });
   const memberships = useQuery({
     queryKey: ['memberships'],
     queryFn: () => api<Membership[]>('/api/memberships'),
@@ -78,211 +106,398 @@ export function Certifications() {
   const selected = bodies.flatMap((b) => b.certifications).find((c) => c.id === certificationId);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-      <div className="space-y-4">
-        <Card>
-          <h2 className="mb-3 font-semibold">Held certifications</h2>
-          {held.data?.length === 0 && <p className="text-sm text-muted-foreground">None yet.</p>}
-          <ul className="divide-y">
-            {held.data?.map((h) => {
-              const open = h.cycles.find((c) => c.status === 'open');
-              return (
-                <li key={h.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                  <span className="font-medium">{h.certification.abbreviation}</span>
-                  <span className="text-muted-foreground">{h.body.name}</span>
-                  <Badge>{h.status}</Badge>
-                  <span className="text-xs text-muted-foreground">
-                    earned {h.earnedOn}
-                    {h.certNumber ? ` · #${h.certNumber}` : ''}
+    <div className="space-y-6">
+      <PageHeader
+        title="Certifications"
+        description="What you hold, where each cycle stands, and the memberships that carry fees."
+      />
+      <HeldList
+        onRemove={(h) => {
+          if (
+            confirm(
+              `Remove ${h.certification.abbreviation} and all its cycles and credit applications?`,
+            )
+          )
+            removeHeld.mutate(h.id);
+        }}
+        bodies={bodies}
+      />
+      <ErrorText error={removeHeld.error} />
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <div className="space-y-4">
+          <Card>
+            <h2 className="mb-3 font-semibold">Memberships</h2>
+            <p className="mb-2 text-xs text-muted-foreground">
+              Needed where the maintenance fee is per membership rather than per certification (e.g.
+              the ISC2 AMF).
+            </p>
+            <ul className="mb-3 divide-y">
+              {memberships.data?.map((m) => (
+                <li key={m.id} className="flex items-center gap-2 py-2 text-sm">
+                  <span className="font-medium">
+                    {bodies.find((b) => b.id === m.bodyId)?.name ?? m.bodyId}
                   </span>
-                  <span className="ml-auto flex flex-wrap gap-2 text-xs">
-                    {h.cycles
-                      .filter((c) => c.status !== 'open')
-                      .map((c) => (
-                        <Link
-                          key={c.id}
-                          className="text-muted-foreground underline"
-                          to={`/cycles/${c.id}`}
-                        >
-                          cycle {c.sequence} ({c.status})
-                        </Link>
-                      ))}
-                    {open ? (
-                      <Link className="underline" to={`/cycles/${open.id}`}>
-                        cycle {open.sequence}: {open.startsOn} → {open.endsOn}
-                      </Link>
-                    ) : (
-                      <span className="text-muted-foreground">no cycle</span>
-                    )}
+                  <span className="text-xs text-muted-foreground">
+                    {m.memberNumber ? `#${m.memberNumber}` : ''}
+                    {m.since ? ` since ${m.since}` : ''}
                   </span>
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => {
-                      if (
-                        confirm(
-                          `Remove ${h.certification.abbreviation} and all its cycles and credit applications?`,
-                        )
-                      )
-                        removeHeld.mutate(h.id);
-                    }}
+                    className="ml-auto"
+                    onClick={() => removeMembership.mutate(m.id)}
                   >
                     remove
                   </Button>
                 </li>
-              );
-            })}
-          </ul>
-        </Card>
-        <Card>
-          <h2 className="mb-3 font-semibold">Memberships</h2>
-          <p className="mb-2 text-xs text-muted-foreground">
-            Needed where the maintenance fee is per membership rather than per certification (e.g.
-            the ISC2 AMF).
-          </p>
-          <ul className="mb-3 divide-y">
-            {memberships.data?.map((m) => (
-              <li key={m.id} className="flex items-center gap-2 py-2 text-sm">
-                <span className="font-medium">
-                  {bodies.find((b) => b.id === m.bodyId)?.name ?? m.bodyId}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {m.memberNumber ? `#${m.memberNumber}` : ''}
-                  {m.since ? ` since ${m.since}` : ''}
-                </span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="ml-auto"
-                  onClick={() => removeMembership.mutate(m.id)}
-                >
-                  remove
+              ))}
+            </ul>
+            <form
+              className="grid gap-2 sm:grid-cols-4"
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                addMembership.mutate();
+              }}
+            >
+              <Field label="Body">
+                <Select value={mBody} onChange={(e) => setMBody(e.target.value)} required>
+                  <option value="">Select…</option>
+                  {bodies
+                    .filter((b) => b.feeScope === 'membership')
+                    .map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                </Select>
+              </Field>
+              <Field label="Member number (optional)">
+                <Input value={mNumber} onChange={(e) => setMNumber(e.target.value)} />
+              </Field>
+              <Field label="Since">
+                <Input type="date" value={mSince} onChange={(e) => setMSince(e.target.value)} />
+              </Field>
+              <div className="flex items-end">
+                <Button type="submit" disabled={!mBody || addMembership.isPending}>
+                  Add
                 </Button>
-              </li>
-            ))}
-          </ul>
+              </div>
+            </form>
+            <ErrorText error={addMembership.error} />
+          </Card>
+        </div>
+        <Card>
+          <h2 className="mb-3 font-semibold">Add a held certification</h2>
           <form
-            className="grid gap-2 sm:grid-cols-4"
+            className="space-y-3"
             onSubmit={(e: FormEvent) => {
               e.preventDefault();
-              addMembership.mutate();
+              addHeld.mutate();
             }}
           >
-            <Field label="Body">
-              <Select value={mBody} onChange={(e) => setMBody(e.target.value)} required>
+            <Field label="Certification (from catalog)">
+              <Select value={certificationId} onChange={(e) => setCert(e.target.value)} required>
                 <option value="">Select…</option>
-                {bodies
-                  .filter((b) => b.feeScope === 'membership')
-                  .map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
+                {bodies.map((b) => (
+                  <optgroup key={b.id} label={b.name}>
+                    {b.certifications.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.abbreviation} — {c.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
               </Select>
             </Field>
-            <Field label="Member number (optional)">
-              <Input value={mNumber} onChange={(e) => setMNumber(e.target.value)} />
+            {selected && (
+              <p className="text-xs text-muted-foreground">
+                {selected.requirement
+                  ? `${selected.requirement.totalCreditsX100 / 100} ${selected.creditUnitLabel} per ${selected.requirement.cycleMonths}-month cycle` +
+                    (selected.requirement.annualMinX100
+                      ? `; ${selected.requirement.annualMinX100 / 100}/yr ${selected.requirement.annualMinSeverity === 'soft' ? 'suggested' : 'required'}`
+                      : '') +
+                    (selected.requirement.feeAmountCents
+                      ? `; fee ${fmtMoney(selected.requirement.feeAmountCents, selected.requirement.feeCurrency ?? 'USD')} per ${selected.requirement.feePeriodMonths} months`
+                      : '')
+                  : 'No continuing-education requirement of its own.'}
+              </p>
+            )}
+            <Field label="Earned on (cycle starts here)">
+              <Input
+                type="date"
+                value={earnedOn}
+                onChange={(e) => setEarnedOn(e.target.value)}
+                required
+              />
             </Field>
-            <Field label="Since">
-              <Input type="date" value={mSince} onChange={(e) => setMSince(e.target.value)} />
+            <Field label="Certification number (optional, stays in your database)">
+              <Input value={certNumber} onChange={(e) => setCertNumber(e.target.value)} />
             </Field>
-            <div className="flex items-end">
-              <Button type="submit" disabled={!mBody || addMembership.isPending}>
-                Add
-              </Button>
-            </div>
+            <ErrorText error={addHeld.error} />
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={!certificationId || !earnedOn || addHeld.isPending}
+            >
+              Add
+            </Button>
           </form>
-          <ErrorText error={addMembership.error} />
+          <div className="mt-4 border-t pt-3 text-xs text-muted-foreground">
+            <p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => check.mutate()}
+                disabled={check.isPending}
+              >
+                Check for catalog updates
+              </Button>{' '}
+              fetches one file, <code>catalog/lock.json</code>, from this project's GitHub
+              repository and compares versions. Nothing about you is sent. It never runs on its own.
+            </p>
+            {check.data && (
+              <p className="mt-1">
+                {check.data.updates.length === 0
+                  ? `Up to date with ${check.data.url} as of ${check.data.checkedAt.slice(0, 16).replace('T', ' ')}.`
+                  : `Newer rule versions available: ${check.data.updates.map((u) => `${u.body} v${u.remote} (verified ${u.verified_on})`).join(', ')}. Update by redeploying or pulling a new image.`}
+              </p>
+            )}
+            <ErrorText error={check.error} />
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Catalog:{' '}
+            {bodies
+              .map(
+                (b) =>
+                  `${b.name} v${b.currentVersion?.version ?? '?'} (verified ${b.currentVersion?.verifiedOn ?? '?'})`,
+              )
+              .join(' · ')}
+          </p>
         </Card>
       </div>
-      <Card>
-        <h2 className="mb-3 font-semibold">Add a held certification</h2>
-        <form
-          className="space-y-3"
-          onSubmit={(e: FormEvent) => {
-            e.preventDefault();
-            addHeld.mutate();
-          }}
-        >
-          <Field label="Certification (from catalog)">
-            <Select value={certificationId} onChange={(e) => setCert(e.target.value)} required>
-              <option value="">Select…</option>
-              {bodies.map((b) => (
-                <optgroup key={b.id} label={b.name}>
-                  {b.certifications.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.abbreviation} — {c.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </Select>
-          </Field>
-          {selected && (
-            <p className="text-xs text-muted-foreground">
-              {selected.requirement
-                ? `${selected.requirement.totalCreditsX100 / 100} ${selected.creditUnitLabel} per ${selected.requirement.cycleMonths}-month cycle` +
-                  (selected.requirement.annualMinX100
-                    ? `; ${selected.requirement.annualMinX100 / 100}/yr ${selected.requirement.annualMinSeverity === 'soft' ? 'suggested' : 'required'}`
-                    : '') +
-                  (selected.requirement.feeAmountCents
-                    ? `; fee ${fmtMoney(selected.requirement.feeAmountCents, selected.requirement.feeCurrency ?? 'USD')} per ${selected.requirement.feePeriodMonths} months`
-                    : '')
-                : 'No continuing-education requirement of its own.'}
-            </p>
-          )}
-          <Field label="Earned on (cycle starts here)">
-            <Input
-              type="date"
-              value={earnedOn}
-              onChange={(e) => setEarnedOn(e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="Certification number (optional, stays in your database)">
-            <Input value={certNumber} onChange={(e) => setCertNumber(e.target.value)} />
-          </Field>
-          <ErrorText error={addHeld.error} />
-          <Button
-            variant="primary"
-            type="submit"
-            disabled={!certificationId || !earnedOn || addHeld.isPending}
-          >
-            Add
-          </Button>
-        </form>
-        <div className="mt-4 border-t pt-3 text-xs text-muted-foreground">
-          <p>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => check.mutate()}
-              disabled={check.isPending}
-            >
-              Check for catalog updates
-            </Button>{' '}
-            fetches one file, <code>catalog/lock.json</code>, from this project's GitHub repository
-            and compares versions. Nothing about you is sent. It never runs on its own.
-          </p>
-          {check.data && (
-            <p className="mt-1">
-              {check.data.updates.length === 0
-                ? `Up to date with ${check.data.url} as of ${check.data.checkedAt.slice(0, 16).replace('T', ' ')}.`
-                : `Newer rule versions available: ${check.data.updates.map((u) => `${u.body} v${u.remote} (verified ${u.verified_on})`).join(', ')}. Update by redeploying or pulling a new image.`}
-            </p>
-          )}
-          <ErrorText error={check.error} />
-        </div>
-        <p className="mt-4 text-xs text-muted-foreground">
-          Catalog:{' '}
-          {bodies
-            .map(
-              (b) =>
-                `${b.name} v${b.currentVersion?.version ?? '?'} (verified ${b.currentVersion?.verifiedOn ?? '?'})`,
-            )
-            .join(' · ')}
-        </p>
-      </Card>
     </div>
+  );
+}
+
+const HELD_SORTS = ['name', 'severity', 'expiry', 'progress'] as const;
+type HeldSort = (typeof HELD_SORTS)[number];
+
+function HeldList({ bodies, onRemove }: { bodies: Body[]; onRemove: (h: Held) => void }) {
+  const list = useList({
+    sorts: HELD_SORTS,
+    defaultSort: 'name',
+    defaultDir: 'asc',
+    filters: {
+      standing: Object.keys(STANDING),
+      expiry: Object.keys(EXPIRY),
+      progress: Object.keys(PROGRESS),
+      bodyId: null,
+    },
+  });
+  const q = useListQuery<Held, HeldSort, 'standing' | 'expiry' | 'progress' | 'bodyId'>(
+    'held',
+    '/api/held',
+    list,
+  );
+  const data = q.data;
+  const chips: Chip[] = [
+    list.q && { key: 'q', label: `Search: ${list.q}`, onRemove: () => list.set({ q: '' }) },
+    list.filters.standing && {
+      key: 'standing',
+      label: STANDING[list.filters.standing as StandingBucket].label,
+      onRemove: () => list.set({ standing: '' }),
+    },
+    list.filters.expiry && {
+      key: 'expiry',
+      label: `Cycle end: ${EXPIRY[list.filters.expiry as keyof typeof EXPIRY]}`,
+      onRemove: () => list.set({ expiry: '' }),
+    },
+    list.filters.progress && {
+      key: 'progress',
+      label: `Credits: ${PROGRESS[list.filters.progress as keyof typeof PROGRESS]}`,
+      onRemove: () => list.set({ progress: '' }),
+    },
+    list.filters.bodyId && {
+      key: 'bodyId',
+      label: bodies.find((b) => b.id === list.filters.bodyId)?.name ?? list.filters.bodyId,
+      onRemove: () => list.set({ bodyId: '' }),
+    },
+  ].filter(Boolean) as Chip[];
+  const sortTh = (
+    key: HeldSort,
+    label: string,
+    natural: 'asc' | 'desc' = 'asc',
+    className?: string,
+  ) => (
+    <SortableTh
+      active={list.sort === key}
+      direction={list.dir}
+      onSort={() => list.sortBy(key, natural)}
+      {...(className && { className })}
+    >
+      {label}
+    </SortableTh>
+  );
+
+  return (
+    <section aria-labelledby="held-heading" className="space-y-3">
+      <h2 id="held-heading" className="text-lg font-semibold">
+        Held certifications
+      </h2>
+      <Toolbar
+        label="Held certification filters"
+        end={<ResultCount page={list.page} perPage={list.perPage} total={data?.total} />}
+      >
+        <SearchField
+          label="Search held certifications"
+          placeholder="Name, body or number"
+          value={list.q}
+          onCommit={(v) => list.set({ q: v })}
+        />
+        <FilterSelect
+          label="Standing"
+          value={list.filters.standing}
+          options={options(STANDING)}
+          onChange={(v) => list.set({ standing: v })}
+        />
+        <FilterSelect
+          label="Cycle end"
+          value={list.filters.expiry}
+          options={options(EXPIRY)}
+          onChange={(v) => list.set({ expiry: v })}
+        />
+        <FilterSelect
+          label="Credits"
+          value={list.filters.progress}
+          options={options(PROGRESS)}
+          onChange={(v) => list.set({ progress: v })}
+        />
+        <FilterSelect
+          label="Body"
+          value={list.filters.bodyId}
+          options={bodies.map((b) => ({ value: b.id, label: b.name }))}
+          onChange={(v) => list.set({ bodyId: v })}
+        />
+        <PerPageSelect value={list.perPage} onChange={(n) => list.set({ per_page: n })} />
+      </Toolbar>
+      <FilterChips chips={chips} onClearAll={list.clear} />
+      {q.isPending && <Skeleton rows={5} />}
+      {q.isError && <ErrorText error={q.error} />}
+      {data && data.total === 0 && (
+        <ListEmpty
+          narrowed={list.narrowed}
+          onClear={list.clear}
+          noun="certifications"
+          emptyTitle="No held certifications yet"
+          emptyDescription="Add one below. Its first renewal cycle is created from the date you earned it."
+        />
+      )}
+      {data && data.rows.length > 0 && (
+        <div className={cn(q.isPlaceholderData && 'opacity-60')}>
+          <Table label="Held certifications">
+            <THead>
+              <tr>
+                {sortTh('name', 'Certification')}
+                <Th>Body</Th>
+                {sortTh('severity', 'Standing', 'desc')}
+                {sortTh('expiry', 'Cycle end')}
+                {sortTh('progress', 'Credits', 'asc', 'text-right')}
+                <Th>Cycles</Th>
+                <Th>
+                  <span className="sr-only">Actions</span>
+                </Th>
+              </tr>
+            </THead>
+            <TBody>
+              {data.rows.map((h) => {
+                const open = h.cycles.find((c) => c.status === 'open');
+                const bucket = h.derived.standing ?? 'untracked';
+                return (
+                  <Tr key={h.id}>
+                    <Td>
+                      <span className="font-medium">{h.certification.abbreviation}</span>
+                      <span
+                        className="block max-w-72 truncate text-xs text-dim"
+                        title={h.certification.name}
+                      >
+                        {h.certification.name}
+                        {h.certNumber && <span className="num"> · #{h.certNumber}</span>}
+                      </span>
+                    </Td>
+                    <Td className="text-dim">{h.body.name}</Td>
+                    <Td>
+                      <Badge tone={STANDING[bucket].tone}>{STANDING[bucket].label}</Badge>
+                    </Td>
+                    <Td className="num whitespace-nowrap">
+                      {open ? (
+                        <>
+                          {open.endsOn}
+                          <span className="block text-xs text-dim">
+                            {h.derived.daysToExpiry != null && h.derived.daysToExpiry >= 0
+                              ? `${fmtCount(h.derived.daysToExpiry)} days`
+                              : `${fmtCount(Math.abs(h.derived.daysToExpiry ?? 0))} days ago`}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-dim">none</span>
+                      )}
+                    </Td>
+                    <Td numeric className="whitespace-nowrap">
+                      {h.derived.requiredX100 ? (
+                        <>
+                          {fmtCredits(h.derived.earnedX100 ?? 0)} /{' '}
+                          {fmtCredits(h.derived.requiredX100)}
+                        </>
+                      ) : (
+                        <span className="text-dim">n/a</span>
+                      )}
+                    </Td>
+                    <Td className="text-xs">
+                      <span className="flex flex-wrap gap-x-2">
+                        {open && (
+                          <Link
+                            className="text-accent underline-offset-2 hover:underline"
+                            to={`/cycles/${open.id}`}
+                          >
+                            cycle {open.sequence}
+                          </Link>
+                        )}
+                        {h.cycles
+                          .filter((c) => c.status !== 'open')
+                          .map((c) => (
+                            <Link
+                              key={c.id}
+                              className="text-dim underline-offset-2 hover:underline"
+                              to={`/cycles/${c.id}`}
+                            >
+                              cycle {c.sequence} ({c.status})
+                            </Link>
+                          ))}
+                      </span>
+                    </Td>
+                    <Td className="text-right">
+                      <Button size="sm" variant="ghost" onClick={() => onRemove(h)}>
+                        Remove
+                        <span className="sr-only"> {h.certification.abbreviation}</span>
+                      </Button>
+                    </Td>
+                  </Tr>
+                );
+              })}
+            </TBody>
+          </Table>
+        </div>
+      )}
+      {data && (
+        <Pagination
+          page={list.page}
+          pages={data.pages}
+          perPage={list.perPage}
+          total={data.total}
+          hrefFor={list.hrefFor}
+          label="Held certifications pages"
+        />
+      )}
+    </section>
   );
 }
