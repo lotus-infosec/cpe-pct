@@ -30,6 +30,7 @@ export default tseslint.config(
       '.wrangler/**',
       'src/db/migrations/**',
       'CPETracker/**',
+      'button-test/**',
       'worker-configuration.d.ts',
     ],
   },
