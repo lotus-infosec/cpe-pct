@@ -8,6 +8,7 @@ import { listQuery, offsetOf, orderBy, paged, searchAny, validList } from '../qu
 import { draftActivity, fillDraftFromText, objectKey, sha256Hex, statusFor } from '../evidence';
 
 const { extractedText: _text, ...listColumns } = getTableColumns(s.evidence);
+const hasLink = sql`(SELECT 1 FROM ${s.activityEvidence} WHERE ${s.activityEvidence.evidenceId} = ${s.evidence.id})`;
 const EVIDENCE_SORTS = {
   uploadedAt: s.evidence.uploadedAt,
   size: s.evidence.sizeBytes,
@@ -16,7 +17,11 @@ const EVIDENCE_SORTS = {
 const evidenceList = listQuery(
   Object.keys(EVIDENCE_SORTS) as [keyof typeof EVIDENCE_SORTS],
   { sort: 'uploadedAt', dir: 'desc' },
-  { status: z.enum(['pending', 'done', 'no_text', 'failed', 'manual']).optional() },
+  {
+    status: z.enum(['pending', 'done', 'no_text', 'failed', 'manual']).optional(),
+    // Files are kept when their activities are deleted (STAGE8); this finds the ones left behind.
+    linked: z.enum(['linked', 'unlinked']).optional(),
+  },
 );
 
 export const evidence = new Hono<Vars>()
@@ -27,6 +32,8 @@ export const evidence = new Hono<Vars>()
     const where = and(
       searchAny([e.filename], p.q),
       p.status ? eq(e.extractionStatus, p.status) : undefined,
+      p.linked === 'linked' ? sql`EXISTS ${hasLink}` : undefined,
+      p.linked === 'unlinked' ? sql`NOT EXISTS ${hasLink}` : undefined,
     );
     const [count, rows] = await Promise.all([
       db
