@@ -1,7 +1,0 @@
-// The $schema key, which the real config has and b-full did not. Everything else is minimal.
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "cpe-pct-bt-h-schema",
-  "main": "src/index.ts",
-  "compatibility_date": "2026-09-01"
-}
