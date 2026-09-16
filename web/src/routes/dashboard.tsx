@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { api, fmtCredits } from '@/lib/api';
 import type { DashboardItem } from '@/lib/types';
-import { Badge, Card } from '@/components/ui';
+import { Badge, Card, Progress } from '@/components/ui';
 
 const LABEL: Record<string, string> = {
   cycle_total: 'cycle total',
@@ -23,7 +23,7 @@ export function Dashboard() {
     queryFn: () => api<{ asOf: string; items: DashboardItem[] }>('/api/dashboard'),
   });
   if (q.isPending) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (q.isError) return <p className="text-sm text-red-600">Failed to load.</p>;
+  if (q.isError) return <p className="text-sm text-bad">Failed to load.</p>;
   if (q.data.items.length === 0)
     return (
       <Card>
@@ -40,10 +40,6 @@ export function Dashboard() {
       {q.data.items.map((it) => {
         const st = it.standing;
         const earned = st ? st.totals.accepted + st.totals.submitted + st.totals.claimed : 0;
-        const pct =
-          st && st.requiredX100 > 0
-            ? Math.min(100, Math.round((earned / st.requiredX100) * 100))
-            : 0;
         const stale =
           it.ruleVersion &&
           Date.now() - new Date(it.ruleVersion.verifiedOn).getTime() > 365 * 86_400_000;
@@ -76,12 +72,12 @@ export function Dashboard() {
                     {st.daysRemaining} days left · ends {it.cycle.endsOn}
                   </span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded bg-muted">
-                  <div
-                    className={`h-full ${st.compliant ? 'bg-emerald-500' : 'bg-red-500'}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
+                <Progress
+                  value={earned}
+                  max={st.requiredX100}
+                  failing={!st.compliant}
+                  label={`${it.certification.abbreviation} credits toward the cycle requirement`}
+                />
                 <p className="mt-1 text-[11px] text-muted-foreground">
                   accepted {fmtCredits(st.totals.accepted)} · submitted{' '}
                   {fmtCredits(st.totals.submitted)} · claimed {fmtCredits(st.totals.claimed)}
@@ -105,7 +101,7 @@ export function Dashboard() {
                   </ul>
                 )}
                 {st.projectedAtCycleEnd.length > 0 && (
-                  <p className="mt-1 text-xs text-amber-700">
+                  <p className="mt-1 text-xs text-warn">
                     Behind pace for: {st.projectedAtCycleEnd.map((t) => LABEL[t] ?? t).join(', ')}
                   </p>
                 )}
