@@ -94,7 +94,8 @@ export function progressBucket(earned: number, required: number): ProgressBucket
 }
 
 /**
- * overdue   a hard requirement is past due (the engine's `compliant` is false)
+ * overdue   a hard requirement is past due (the engine's `compliant` is false), or the cycle has
+ *           ended without a recorded renewal
  * at_risk   compliant, but a soft requirement is overdue, or something unmet is due within 30 days
  * lapsed    the certification or its latest cycle is marked lapsed
  * compliant everything else with an open cycle
@@ -110,7 +111,9 @@ export function standingBucket(
   if (heldStatus === 'lapsed' || (!open && cycles.some((c) => c.status === 'lapsed')))
     return 'lapsed';
   if (!open || !st) return 'untracked';
-  if (!st.compliant) return 'overdue';
+  // A cycle past its end date is overdue for renewal even when every requirement is met: the issuer
+  // has not been told, or the renewal was not recorded here.
+  if (!st.compliant || st.daysRemaining < 0) return 'overdue';
   const earned = st.totals.accepted + st.totals.submitted + st.totals.claimed;
   const soon = (due: string | null) =>
     due != null && due >= asOf && daysBetween(asOf, due) <= AT_RISK_DAYS;
