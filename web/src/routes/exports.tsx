@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { fetchAll } from '@/lib/list';
 import type { Held } from '@/lib/types';
 import { Badge, Button, Card, ErrorText, Input } from '@/components/ui';
 
@@ -16,7 +17,10 @@ interface ExportRow {
 
 export function ExportsPage() {
   const qc = useQueryClient();
-  const held = useQuery({ queryKey: ['held'], queryFn: () => api<Held[]>('/api/held') });
+  const held = useQuery({
+    queryKey: ['held', 'all'],
+    queryFn: () => fetchAll<Held>('/api/held?view=basic'),
+  });
   const list = useQuery({
     queryKey: ['exports'],
     queryFn: () => api<ExportRow[]>('/api/exports'),

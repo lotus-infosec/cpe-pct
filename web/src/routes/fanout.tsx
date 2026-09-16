@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
 import { api, fmtCredits } from '@/lib/api';
+import { fetchAll } from '@/lib/list';
 import type { Fanout, Held, Standing } from '@/lib/types';
 import { Badge, Button, Card, ErrorText, Field, Input, Select } from '@/components/ui';
 import { EvidenceList, EvidenceUpload } from '@/components/evidence';
@@ -28,7 +29,10 @@ export function FanoutPage() {
     queryKey: ['fanout', id],
     queryFn: () => api<Fanout>(`/api/activities/${id}/fanout`),
   });
-  const held = useQuery({ queryKey: ['held'], queryFn: () => api<Held[]>('/api/held') });
+  const held = useQuery({
+    queryKey: ['held', 'all'],
+    queryFn: () => fetchAll<Held>('/api/held?view=basic'),
+  });
   const types = useQuery({
     queryKey: ['activity-types'],
     queryFn: () => api<ActivityType[]>('/api/catalog/activity-types'),
@@ -251,7 +255,7 @@ export function FanoutPage() {
             higher certification
           </button>
         )}
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-xs text-muted-foreground">
               <tr>

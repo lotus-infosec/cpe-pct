@@ -142,7 +142,7 @@ describe('backup → fresh instance → restore → verify', () => {
     ).json()) as { ok: boolean; diffs: unknown[] };
     expect(v).toMatchObject({ ok: true, diffs: [] });
     const ev = await b.call('/api/evidence', { cookie: bc });
-    expect(((await ev.json()) as unknown[]).length).toBe(1);
+    expect(((await ev.json()) as { rows: unknown[] }).rows.length).toBe(1);
     // Restored evidence bytes are the originals.
     const evRow = (await b.ctx.db.select().from(s.evidence).get())!;
     const obj = await b.ctx.objectStore.get(evRow.objectKey);
