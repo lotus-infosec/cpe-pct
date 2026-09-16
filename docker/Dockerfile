@@ -5,6 +5,8 @@
 FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
+# `prepare` runs during npm ci and lives in a file, so it has to be present before the install.
+COPY scripts/prepare.mjs ./scripts/prepare.mjs
 RUN npm ci
 COPY . .
 RUN npm run build && rm -rf node_modules && npm ci --omit=dev
