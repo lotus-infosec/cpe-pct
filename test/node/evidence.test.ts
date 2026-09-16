@@ -78,7 +78,7 @@ describe('evidence upload', () => {
     const ev = await get(`/api/evidence/${evidenceId}`);
     expect(ev.json.activityIds.length).toBe(2);
     const all = await get('/api/evidence');
-    expect(all.json.length).toBe(1);
+    expect(all.json.rows.length).toBe(1);
     let n = 0;
     for await (const _ of ctx.objectStore.list('evidence/')) n += 1;
     expect(n).toBe(1);
