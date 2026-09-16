@@ -104,7 +104,7 @@ describe('catalog and held certifications', () => {
       cycleIds[key] = cy.id;
       expect(cy).toMatchObject({ startsOn: earnedOn, status: 'open', sequence: 1 });
     }
-    const cissp = (await call('GET', '/api/held')).json as unknown as any[];
+    const cissp = (await call('GET', '/api/held')).json['rows'] as any[];
     expect(cissp.find((h) => h.id === heldIds['cissp']).cycles[0]).toMatchObject({
       endsOn: '2028-05-01',
       ruleVersionId: 'isc2@1',
@@ -264,8 +264,9 @@ describe('activity → fan-out → applications → standing', () => {
     });
   });
   it('application status transitions are enforced', async () => {
-    const apps = (await call('GET', `/api/applications?cycleId=${cycleIds['cissp']}`))
-      .json as unknown as any[];
+    const apps = (await call('GET', `/api/applications?cycleId=${cycleIds['cissp']}`)).json[
+      'rows'
+    ] as any[];
     const id = apps[0].id;
     expect((await call('PATCH', `/api/applications/${id}`, { status: 'rejected' })).status).toBe(
       409,
@@ -310,7 +311,7 @@ describe('CSV import', () => {
 describe('dashboard and renewal', () => {
   it('summarises every held cert', async () => {
     const r = await call('GET', '/api/dashboard');
-    const items = r.json['items'] as any[];
+    const items = r.json['rows'] as any[];
     expect(items.length).toBe(4);
     expect(items.find((x) => x.held.id === heldIds['cissp']).standing).toMatchObject({
       compliant: true,

@@ -1,21 +1,69 @@
 import { Hono } from 'hono';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, getTableColumns, inArray, sql } from 'drizzle-orm';
+import { z } from 'zod';
 import * as s from '../../db/schema';
 import { EVIDENCE_MAX_BYTES, INLINE_BUDGET, newId, type Vars } from '../context';
 import { sniff } from '../../adapters/shared/sniff';
+import { listQuery, offsetOf, orderBy, paged, searchAny, validList } from '../query';
 import { draftActivity, fillDraftFromText, objectKey, sha256Hex, statusFor } from '../evidence';
 
+const { extractedText: _text, ...listColumns } = getTableColumns(s.evidence);
+const EVIDENCE_SORTS = {
+  uploadedAt: s.evidence.uploadedAt,
+  size: s.evidence.sizeBytes,
+  filename: sql`lower(${s.evidence.filename})`,
+} as const;
+const evidenceList = listQuery(
+  Object.keys(EVIDENCE_SORTS) as [keyof typeof EVIDENCE_SORTS],
+  { sort: 'uploadedAt', dir: 'desc' },
+  { status: z.enum(['pending', 'done', 'no_text', 'failed', 'manual']).optional() },
+);
+
 export const evidence = new Hono<Vars>()
-  .get('/', async (c) => {
+  .get('/', validList(evidenceList), async (c) => {
     const { db } = c.get('ctx');
-    const rows = await db.select().from(s.evidence).all();
-    const links = await db.select().from(s.activityEvidence).all();
+    const p = c.req.valid('query');
+    const e = s.evidence;
+    const where = and(
+      searchAny([e.filename], p.q),
+      p.status ? eq(e.extractionStatus, p.status) : undefined,
+    );
+    const [count, rows] = await Promise.all([
+      db
+        .select({ n: sql<number>`count(*)` })
+        .from(e)
+        .where(where)
+        .get(),
+      db
+        .select(listColumns)
+        .from(e)
+        .where(where)
+        .orderBy(...orderBy(EVIDENCE_SORTS[p.sort], e.id, p.dir))
+        .limit(p.per_page)
+        .offset(offsetOf(p))
+        .all(),
+    ]);
+    const links = rows.length
+      ? await db
+          .select()
+          .from(s.activityEvidence)
+          .where(
+            inArray(
+              s.activityEvidence.evidenceId,
+              rows.map((r) => r.id),
+            ),
+          )
+          .all()
+      : [];
     return c.json(
-      rows.map((e) => ({
-        ...e,
-        extractedText: undefined,
-        activityIds: links.filter((l) => l.evidenceId === e.id).map((l) => l.activityId),
-      })),
+      paged(
+        rows.map((r) => ({
+          ...r,
+          activityIds: links.filter((l) => l.evidenceId === r.id).map((l) => l.activityId),
+        })),
+        count?.n ?? 0,
+        p,
+      ),
     );
   })
   .get('/:id', async (c) => {
