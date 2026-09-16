@@ -2,7 +2,34 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { ApiError, api } from '@/lib/api';
-import { Badge, Button, Card, ErrorText, Input } from '@/components/ui';
+import { useList, useListQuery } from '@/lib/list';
+import { EXTRACTION_STATUS, options } from '@/lib/labels';
+import { cn } from '@/lib/utils';
+import {
+  Badge,
+  Button,
+  Card,
+  ErrorText,
+  FilterChips,
+  FilterSelect,
+  Input,
+  ListEmpty,
+  PageHeader,
+  Pagination,
+  PerPageSelect,
+  ResultCount,
+  SearchField,
+  Skeleton,
+  SortableTh,
+  Table,
+  TBody,
+  Td,
+  Th,
+  THead,
+  Toolbar,
+  Tr,
+  type Chip,
+} from '@/components/ui';
 
 export interface EvidenceRow {
   id: string;
@@ -185,52 +212,174 @@ export function EvidenceList({ activityId }: { activityId: string }) {
 
 /** Standalone entry point: upload first, get a draft, go edit it. */
 export function AddEvidencePage() {
-  const all = useQuery({
-    queryKey: ['evidence'],
-    queryFn: () => api<EvidenceRow[]>('/api/evidence'),
-  });
   const [last, setLast] = useState<UploadResult | null>(null);
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-      <Card>
+    <div className="space-y-6">
+      <PageHeader
+        title="Evidence"
+        description="Certificates and receipts, kept on this instance and linked to the activities they prove."
+      />
+      <Card className="max-w-3xl">
         <h2 className="mb-1 font-semibold">Add evidence</h2>
-        <p className="mb-3 text-xs text-muted-foreground">
+        <p className="mb-3 text-xs text-dim">
           Upload a certificate or receipt first; a draft activity is created and pre-filled from the
           document where possible. You finish it and confirm the credit fan-out.
         </p>
         <EvidenceUpload onDone={setLast} />
         {last && (
           <p className="mt-3 text-sm">
-            <Link className="underline" to={`/activities/${last.activityId}`}>
-              Open the draft activity →
+            <Link
+              className="text-accent underline-offset-2 hover:underline"
+              to={`/activities/${last.activityId}`}
+            >
+              Open the draft activity
             </Link>
           </p>
         )}
       </Card>
-      <Card>
-        <h3 className="mb-2 font-semibold">All evidence</h3>
-        <ul className="divide-y text-sm">
-          {all.data?.map((e) => (
-            <li key={e.id} className="flex flex-wrap items-center gap-2 py-1.5">
-              <span>{e.filename}</span>
-              <span className="text-xs text-muted-foreground">
-                {fmtBytes(e.sizeBytes)} · {e.uploadedAt.slice(0, 10)}
-              </span>
-              <Badge tone={STATUS[e.extractionStatus][1]}>{STATUS[e.extractionStatus][0]}</Badge>
-              <span className="ml-auto text-xs">
-                {e.activityIds?.map((id) => (
-                  <Link key={id} className="mr-1 underline" to={`/activities/${id}`}>
-                    activity
-                  </Link>
-                ))}
-              </span>
-            </li>
-          ))}
-          {all.data?.length === 0 && (
-            <li className="text-muted-foreground">Nothing uploaded yet.</li>
-          )}
-        </ul>
-      </Card>
+      <AllEvidence />
     </div>
+  );
+}
+
+const EVIDENCE_SORTS = ['uploadedAt', 'filename', 'size'] as const;
+type EvidenceSort = (typeof EVIDENCE_SORTS)[number];
+
+function AllEvidence() {
+  const list = useList({
+    sorts: EVIDENCE_SORTS,
+    defaultSort: 'uploadedAt',
+    defaultDir: 'desc',
+    filters: { status: Object.keys(EXTRACTION_STATUS) },
+  });
+  const q = useListQuery<EvidenceRow, EvidenceSort, 'status'>('evidence', '/api/evidence', list);
+  const data = q.data;
+  const chips: Chip[] = [
+    list.q && { key: 'q', label: `Search: ${list.q}`, onRemove: () => list.set({ q: '' }) },
+    list.filters.status && {
+      key: 'status',
+      label: EXTRACTION_STATUS[list.filters.status as keyof typeof EXTRACTION_STATUS].label,
+      onRemove: () => list.set({ status: '' }),
+    },
+  ].filter(Boolean) as Chip[];
+  const sortTh = (
+    key: EvidenceSort,
+    label: string,
+    natural: 'asc' | 'desc',
+    className?: string,
+  ) => (
+    <SortableTh
+      active={list.sort === key}
+      direction={list.dir}
+      onSort={() => list.sortBy(key, natural)}
+      {...(className && { className })}
+    >
+      {label}
+    </SortableTh>
+  );
+  return (
+    <section aria-labelledby="evidence-heading" className="space-y-3">
+      <h2 id="evidence-heading" className="text-lg font-semibold">
+        All evidence
+      </h2>
+      <Toolbar
+        label="Evidence filters"
+        end={<ResultCount page={list.page} perPage={list.perPage} total={data?.total} />}
+      >
+        <SearchField
+          label="Search evidence"
+          placeholder="File name"
+          value={list.q}
+          onCommit={(v) => list.set({ q: v })}
+        />
+        <FilterSelect
+          label="Extraction"
+          value={list.filters.status}
+          options={options(EXTRACTION_STATUS)}
+          onChange={(v) => list.set({ status: v })}
+        />
+        <PerPageSelect value={list.perPage} onChange={(n) => list.set({ per_page: n })} />
+      </Toolbar>
+      <FilterChips chips={chips} onClearAll={list.clear} />
+      {q.isPending && <Skeleton rows={5} />}
+      {q.isError && <ErrorText error={q.error} />}
+      {data && data.total === 0 && (
+        <ListEmpty
+          narrowed={list.narrowed}
+          onClear={list.clear}
+          noun="files"
+          emptyTitle="Nothing uploaded yet"
+          emptyDescription="Uploaded certificates and receipts are listed here."
+        />
+      )}
+      {data && data.rows.length > 0 && (
+        <div className={cn(q.isPlaceholderData && 'opacity-60')}>
+          <Table label="Evidence files">
+            <THead>
+              <tr>
+                {sortTh('filename', 'File', 'asc')}
+                {sortTh('size', 'Size', 'desc', 'text-right')}
+                {sortTh('uploadedAt', 'Uploaded', 'desc')}
+                <Th>Extraction</Th>
+                <Th>Activities</Th>
+              </tr>
+            </THead>
+            <TBody>
+              {data.rows.map((e) => (
+                <Tr key={e.id}>
+                  <Td className="max-w-80">
+                    <a
+                      className="block truncate text-fg underline-offset-2 hover:text-accent hover:underline"
+                      href={`/api/evidence/${e.id}/content`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={e.filename}
+                    >
+                      {e.filename}
+                    </a>
+                  </Td>
+                  <Td numeric className="whitespace-nowrap">
+                    {fmtBytes(e.sizeBytes)}
+                  </Td>
+                  <Td className="num whitespace-nowrap">{e.uploadedAt.slice(0, 10)}</Td>
+                  <Td>
+                    <Badge tone={EXTRACTION_STATUS[e.extractionStatus].tone}>
+                      {EXTRACTION_STATUS[e.extractionStatus].label}
+                    </Badge>
+                  </Td>
+                  <Td className="text-xs">
+                    {e.activityIds && e.activityIds.length > 0 ? (
+                      <span className="flex flex-wrap gap-x-2">
+                        {e.activityIds.map((id, i) => (
+                          <Link
+                            key={id}
+                            className="text-accent underline-offset-2 hover:underline"
+                            to={`/activities/${id}`}
+                          >
+                            activity {i + 1}
+                          </Link>
+                        ))}
+                      </span>
+                    ) : (
+                      <span className="text-dim">none</span>
+                    )}
+                  </Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
+        </div>
+      )}
+      {data && (
+        <Pagination
+          page={list.page}
+          pages={data.pages}
+          perPage={list.perPage}
+          total={data.total}
+          hrefFor={list.hrefFor}
+          label="Evidence pages"
+        />
+      )}
+    </section>
   );
 }

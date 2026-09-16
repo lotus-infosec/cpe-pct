@@ -17,7 +17,9 @@ export function Table({
   label?: string;
 }) {
   return (
-    <div className="overflow-x-auto rounded-card border border-hairline bg-panel">
+    // `relative` makes this the containing block for visually hidden text inside cells; without it
+    // those absolutely positioned spans escape the scroll container and widen the page on phones.
+    <div className="relative overflow-x-auto rounded-card border border-hairline bg-panel">
       <table className={cn('w-full border-collapse text-left text-sm', className)}>
         {label && <caption className="sr-only">{label}</caption>}
         {children}
