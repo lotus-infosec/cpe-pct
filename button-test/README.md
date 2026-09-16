@@ -24,6 +24,15 @@ without waiting out the cache between attempts.
 | `e-assets` | assets block with `run_worker_first` as an array | |
 | `f-misc` | R2, cron, limits, observability off | |
 
+Round one result, 2026-09-15: **all six reached the configure screen**, which clears `wrangler.jsonc`
+as a whole. Round two isolates what `b-full` got wrong about the real config.
+
+| Directory | Adds | Reading |
+|-----------|------|---------|
+| `g-assets-missing-dir` | `assets.directory` pointing at `./web/dist`, which is a build output and is gitignored, so it is absent from a fresh clone | Leading hypothesis. `b-full` pointed at a committed `./public` |
+| `h-schema` | the `$schema` key | The only other key `b-full` omitted |
+| `i-exact` | the real config byte for byte, name aside | Must fail, or the cause is outside `wrangler.jsonc` |
+
 Test each at `https://deploy.workers.cloudflare.com/?url=https://github.com/lotus-infosec/cpe-pct/tree/main/button-test/<directory>`
 
 Nothing here is part of the application. These projects are excluded from lint, formatting and the

@@ -1,0 +1,37 @@
+// Byte-for-byte the real root config, only the worker name changed. If this fails and b-full
+// passed, the cause is one of the four things b-full got wrong: $schema, the missing assets
+// directory, the nested migrations_dir, or the entrypoint filename.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cpe-pct-bt-i-exact",
+  "main": "src/entry.cloudflare.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cpe-pct",
+      "migrations_dir": "src/db/migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "EVIDENCE",
+      "bucket_name": "cpe-pct-evidence"
+    }
+  ],
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+  "limits": {
+    "cpu_ms": 30000
+  },
+  "observability": {
+    "enabled": false
+  }
+}
