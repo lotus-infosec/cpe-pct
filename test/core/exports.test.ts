@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { builders, generic, type ExportInput } from '../../src/core/exports';
+import { builders, generic, selectionBundle, type ExportInput } from '../../src/core/exports';
 import { COMPTIA_COLUMNS } from '../../src/core/exports/comptia';
 import { ISC2_COLUMNS } from '../../src/core/exports/isc2';
 
@@ -107,5 +107,87 @@ describe('export builders', () => {
   it('generic builder covers unknown bodies', () => {
     const b = generic({ ...input, bodyId: 'x', abbreviation: 'X' });
     expect(b.files[0]!.name).toBe('x-x-cycle-1.csv');
+  });
+});
+
+describe('selection bundle', () => {
+  const ev = {
+    evidenceId: 'e1',
+    filename: 'cert "final".pdf',
+    sha256: 'a'.repeat(64),
+    objectKey: 'evidence/e1',
+    contentType: 'application/pdf',
+    sizeBytes: 10,
+  };
+  const b = selectionBundle({
+    generatedAt: '2026-09-16T00:00:00Z',
+    activities: [
+      {
+        id: 'b',
+        title: 'Later, with a comma',
+        activityType: 'read_book',
+        occurredOn: '2026-03-01',
+        provider: null,
+        description: null,
+        durationMinutes: 90,
+        itemCount: 1,
+        status: 'logged',
+        applications: [
+          {
+            certification: 'CISSP',
+            bodyName: 'ISC2',
+            cycleSequence: 1,
+            creditsX100: 150,
+            categoryKey: 'A',
+            status: 'accepted',
+            issuerReference: 'TEST-REF',
+          },
+          {
+            certification: 'CC',
+            bodyName: 'ISC2',
+            cycleSequence: 2,
+            creditsX100: 100,
+            categoryKey: null,
+            status: 'claimed',
+            issuerReference: null,
+          },
+        ],
+        evidence: [ev],
+      },
+      {
+        id: 'a',
+        title: 'Earlier',
+        activityType: 'attend_webinar',
+        occurredOn: '2026-01-01',
+        provider: 'Synthetic',
+        description: null,
+        durationMinutes: null,
+        itemCount: null,
+        status: 'draft',
+        applications: [],
+        evidence: [ev],
+      },
+    ],
+  });
+  const file = (name: string) => b.files.find((f) => f.name === name)!.content;
+
+  it('writes one activity row each, date order, with quoting', () => {
+    const lines = file('activities.csv').replace('\uFEFF', '').trim().split('\r\n');
+    expect(lines).toHaveLength(3);
+    expect(lines[1]).toMatch(/^a,2026-01-01,Earlier,/);
+    expect(lines[2]).toContain('"Later, with a comma"');
+    expect(lines[2]).toContain('CISSP 1.5; CC 1');
+    expect(lines[2]).toContain(',1.5,');
+  });
+  it('writes one row per credit application', () => {
+    expect(file('credit-applications.csv').trim().split('\r\n')).toHaveLength(3);
+    expect(file('credit-applications.csv')).toContain('TEST-REF');
+  });
+  it('places shared evidence under each activity once', () => {
+    expect(b.evidence.map((e) => e.zipPath)).toEqual([
+      'evidence/2026-01-01_Earlier/cert_final_.pdf',
+      'evidence/2026-03-01_Later_with_a_comma/cert_final_.pdf',
+    ]);
+    expect(file('README.txt')).toContain('Activities: 2');
   });
 });

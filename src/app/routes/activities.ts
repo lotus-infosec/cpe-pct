@@ -1,14 +1,24 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import * as s from '../../db/schema';
 import { newId, today, type Vars } from '../context';
 import { ACTIVITY_TYPES } from '../../core/domain/activity-types';
 import { resolve, standing } from '../../core/rules';
 import { resolveContext, standingContext } from '../rulesets';
 import { inRange } from '../../core/cycles/dates';
-import { isoDateParam, listQuery, offsetOf, orderBy, paged, searchAny, validList } from '../query';
+import { listQuery, offsetOf, orderBy, paged, searchAny, validList } from '../query';
+import type { Db } from '../../db/client';
+import {
+  activityFilter,
+  activityWhere,
+  bulkDeleteBody,
+  executeDelete,
+  planDelete,
+  resolveSelection,
+  type DeletePlan,
+} from '../activity-selection';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const activityBody = z.object({
@@ -42,26 +52,31 @@ const ACTIVITY_SORTS = {
 const activityList = listQuery(
   Object.keys(ACTIVITY_SORTS) as [keyof typeof ACTIVITY_SORTS],
   { sort: 'occurredOn', dir: 'desc' },
-  {
-    type: z.enum(ACTIVITY_TYPES).optional(),
-    status: z.enum(['draft', 'logged']).optional(),
-    from: isoDateParam.optional(),
-    to: isoDateParam.optional(),
-  },
+  activityFilter.omit({ q: true }).shape,
 );
+
+/** Resolves the selection and plans the delete, or answers with the reason it cannot. */
+async function planFor(db: Db, b: z.output<typeof bulkDeleteBody>) {
+  const sel = await resolveSelection(db, b);
+  if (!sel.ok) return sel;
+  return { ...sel, plan: await planDelete(db, sel.ids, b.includeSubmitted ?? false) };
+}
+const deleteSummary = (p: DeletePlan, unknown: string[]) => ({
+  deleted: p.ids.length,
+  applicationsRemoved: p.applicationsRemoved,
+  evidenceUnlinked: p.evidenceUnlinked,
+  evidenceOrphaned: p.evidenceOrphaned,
+  cyclesAffected: p.cyclesAffected,
+  refused: p.refused,
+  unknown,
+});
 
 export const activities = new Hono<Vars>()
   .get('/', validList(activityList), async (c) => {
     const { db } = c.get('ctx');
     const p = c.req.valid('query');
     const a = s.activities;
-    const where = and(
-      searchAny([a.title, a.provider, a.description], p.q),
-      p.type ? eq(a.activityType, p.type) : undefined,
-      p.status ? eq(a.status, p.status) : undefined,
-      p.from ? gte(a.occurredOn, p.from) : undefined,
-      p.to ? lte(a.occurredOn, p.to) : undefined,
-    );
+    const where = activityWhere(p);
     const [count, rows] = await Promise.all([
       db
         .select({ n: sql<number>`count(*)` })
@@ -110,6 +125,19 @@ export const activities = new Hono<Vars>()
         p,
       ),
     );
+  })
+  // Bulk delete (STAGE8). Preview writes nothing and returns the same numbers the delete will act on.
+  .post('/bulk-delete/preview', zValidator('json', bulkDeleteBody), async (c) => {
+    const r = await planFor(c.get('ctx').db, c.req.valid('json'));
+    if (!r.ok) return c.json({ error: r.error, matched: r.matched }, r.status);
+    return c.json(deleteSummary(r.plan, r.unknown));
+  })
+  .post('/bulk-delete', zValidator('json', bulkDeleteBody), async (c) => {
+    const { db } = c.get('ctx');
+    const r = await planFor(db, c.req.valid('json'));
+    if (!r.ok) return c.json({ error: r.error, matched: r.matched }, r.status);
+    await executeDelete(db, r.plan.ids);
+    return c.json(deleteSummary(r.plan, r.unknown));
   })
   .post('/', zValidator('json', activityBody), async (c) => {
     const { db, clock } = c.get('ctx');
