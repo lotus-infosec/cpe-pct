@@ -7,8 +7,10 @@ import { Badge, Button, Card, ErrorText, Input } from '@/components/ui';
 
 interface ExportRow {
   id: string;
-  bodyId: string;
-  cycleId: string;
+  bodyId: string | null;
+  cycleId: string | null;
+  /** Set for a selection bundle made from the Activities page. */
+  activityCount: number | null;
   status: 'building' | 'ready' | 'failed';
   progress: { done: number; total: number; bytes?: number } | null;
   objectKey: string | null;
@@ -90,7 +92,11 @@ export function ExportsPage() {
         <ul className="divide-y">
           {list.data?.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-              <span>{label(e.cycleId)}</span>
+              <span>
+                {e.cycleId
+                  ? label(e.cycleId)
+                  : `Selection of ${e.activityCount ?? 0} ${e.activityCount === 1 ? 'activity' : 'activities'}`}
+              </span>
               <Badge tone={e.status === 'ready' ? 'ok' : e.status === 'failed' ? 'bad' : 'warn'}>
                 {e.status}
                 {e.progress ? ` ${e.progress.done}/${e.progress.total}` : ''}
