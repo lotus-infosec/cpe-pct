@@ -243,7 +243,11 @@ export function Certifications() {
             <Input value={certNumber} onChange={(e) => setCertNumber(e.target.value)} />
           </Field>
           <ErrorText error={addHeld.error} />
-          <Button type="submit" disabled={!certificationId || !earnedOn || addHeld.isPending}>
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={!certificationId || !earnedOn || addHeld.isPending}
+          >
             Add
           </Button>
         </form>

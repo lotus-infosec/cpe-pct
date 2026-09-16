@@ -154,7 +154,7 @@ export function CyclePage() {
 
   if (st.isPending || held.isPending)
     return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (st.isError || !h || !cycle) return <p className="text-sm text-red-600">Cycle not found.</p>;
+  if (st.isError || !h || !cycle) return <p className="text-sm text-bad">Cycle not found.</p>;
   const s = st.data;
   const earned = s.totals.accepted + s.totals.submitted + s.totals.claimed;
 
@@ -200,7 +200,7 @@ export function CyclePage() {
         </ul>
         <ErrorText error={pay.error} />
         {s.projectedAtCycleEnd.length > 0 && (
-          <p className="mt-2 text-xs text-amber-700">
+          <p className="mt-2 text-xs text-warn">
             At the current pace these will not be met by cycle end:{' '}
             {s.projectedAtCycleEnd.map((t) => LABEL[t] ?? t).join(', ')}.
           </p>
@@ -280,7 +280,7 @@ export function CyclePage() {
                       </span>
                     )}
                     {p.status === 'due' && !p.targetId && (
-                      <span className="text-xs text-amber-700">
+                      <span className="text-xs text-warn">
                         add a membership for this body first
                       </span>
                     )}
