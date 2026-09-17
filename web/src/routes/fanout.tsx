@@ -122,7 +122,7 @@ export function FanoutPage() {
     onSuccess: () => qc.invalidateQueries(),
   });
 
-  if (q.isPending) return <p className="text-sm text-muted-foreground">Loading…</p>;
+  if (q.isPending) return <p className="text-sm text-dim">Loading…</p>;
   if (q.isError) return <p className="text-sm text-bad">Not found.</p>;
   const a = q.data.activity;
   const update = (i: number, patch: Partial<Row>) =>
@@ -138,7 +138,7 @@ export function FanoutPage() {
       <Card>
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="font-semibold">{a.title}</h2>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-dim">
             {a.occurredOn} · {a.activityType}
             {a.durationMinutes ? ` · ${a.durationMinutes} min` : ''}
             {a.itemCount && a.itemCount > 1 ? ` · ×${a.itemCount}` : ''}
@@ -159,7 +159,6 @@ export function FanoutPage() {
             {!edit && (
               <Button
                 size="sm"
-                variant="outline"
                 className="ml-auto"
                 onClick={() =>
                   setEdit({
@@ -226,7 +225,7 @@ export function FanoutPage() {
               <ErrorText error={save.error} />
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-dim">
               {a.provider ? `${a.provider} · ` : ''}
               {a.description
                 ?.split('\n')
@@ -245,7 +244,7 @@ export function FanoutPage() {
       </Card>
       <Card>
         <h3 className="mb-1 font-semibold">Credit fan-out</h3>
-        <p className="mb-3 text-xs text-muted-foreground">
+        <p className="mb-3 text-xs text-dim">
           One row per held certification with an open cycle on that date. Suggested values come from
           the pinned rule version; change a value and you must say why. Nothing is applied until you
           confirm.
@@ -258,7 +257,7 @@ export function FanoutPage() {
         )}
         <div className="relative overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted-foreground">
+            <thead className="text-left text-xs text-dim">
               <tr>
                 <th className="py-1 pr-2">Apply</th>
                 <th className="pr-2">Certification</th>
@@ -289,7 +288,7 @@ export function FanoutPage() {
                         </Badge>
                       )}
                       {r.coveredBy && <Badge>covered by {abbr(r.coveredBy)}</Badge>}
-                      <ul className="mt-1 text-[11px] text-muted-foreground">
+                      <ul className="mt-1 text-[11px] text-dim">
                         {r.explain.map((x, k) => (
                           <li key={k}>{x}</li>
                         ))}
@@ -342,7 +341,7 @@ export function FanoutPage() {
           </table>
         </div>
         {rows.length === 0 && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-dim">
             No held certification has an open cycle covering {a.occurredOn}.
           </p>
         )}

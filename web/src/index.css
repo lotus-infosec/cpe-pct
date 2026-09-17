@@ -70,7 +70,6 @@
   --ground: #0d1117;
   --raised: #151b23;
   --hover: #1d242e;
-  --line: #262f3a;
   --text: #d5dae1;
   /* Lifted from #869099 so it clears 4.6:1 on every surface it can sit on, table headers included. */
   --text-dim: #929ba3;
@@ -95,20 +94,6 @@
   --progress-fill: linear-gradient(90deg, var(--accent), var(--ok));
   --row-height: 36px;
   --duration: 120ms;
-
-  /*
-   * shadcn names kept as aliases of the palette, so routes written against them pick up the new
-   * look without a page rewrite. New code uses the palette names; these go as pages are rebuilt.
-   */
-  --background: var(--ground);
-  --foreground: var(--text);
-  --card: var(--panel);
-  --card-foreground: var(--text);
-  --primary: var(--accent);
-  --primary-foreground: var(--ground);
-  --muted: var(--panel-strong);
-  --muted-foreground: var(--text-dim);
-  --border: var(--hairline);
 }
 
 @theme inline {
@@ -139,7 +124,6 @@
   --color-ground: var(--ground);
   --color-raised: var(--raised);
   --color-hover: var(--hover);
-  --color-line: var(--line);
   --color-panel: var(--panel);
   --color-panel-strong: var(--panel-strong);
   --color-hairline: var(--hairline);
@@ -153,16 +137,6 @@
   --color-bad: var(--bad);
   --color-info: var(--info);
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-
   --shadow-overlay: var(--overlay-shadow);
 }
 
@@ -174,7 +148,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-hairline;
   }
   html {
     background-color: var(--ground);
@@ -182,7 +156,7 @@
     accent-color: var(--accent);
   }
   body {
-    @apply bg-background font-sans text-base text-foreground antialiased;
+    @apply bg-ground font-sans text-base text-fg antialiased;
   }
   h1,
   h2,

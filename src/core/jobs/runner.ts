@@ -1,5 +1,5 @@
 // Job runner contracts. The queue and runner are one implementation on both targets; only the tick
-// source differs (AGENTS §6.2, DECISIONS D-012). Persistence is done by the adapter that owns the DB.
+// source differs. Persistence is done by the adapter that owns the DB.
 import type { JobPayload, JobType, TickBudget } from '../../ports';
 
 export interface JobRow {

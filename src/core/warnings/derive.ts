@@ -1,5 +1,5 @@
 // warnings.derive: standing + fee schedule → Notification[] with idempotency keys. Pure.
-// Keys: `${cycleId}:${kind}:${bucket}` so the same situation never notifies twice (AGENTS §6.3(b)).
+// Keys: `${cycleId}:${kind}:${bucket}` so the same situation never notifies twice.
 import type { IsoDate } from '../domain/types';
 import type { Notification } from '../../ports';
 import type { Standing } from '../rules/standing';

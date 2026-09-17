@@ -28,7 +28,7 @@ export function ImportPage() {
     <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
       <Card>
         <h2 className="mb-1 font-semibold">Import history</h2>
-        <p className="mb-3 text-xs text-muted-foreground">
+        <p className="mb-3 text-xs text-dim">
           Backfill credits you have already submitted. Rows become activities with accepted (by
           default) credit applications in the cycle that contains the date. The whole file is
           rejected if any row is invalid. The file never leaves your browser except as the JSON sent
@@ -65,7 +65,7 @@ export function ImportPage() {
       </Card>
       <Card>
         <h3 className="mb-1 font-semibold">Format</h3>
-        <p className="mb-2 text-xs text-muted-foreground">
+        <p className="mb-2 text-xs text-dim">
           Header row required. Columns: <code>certification</code> (catalog id such as{' '}
           <code>isc2/cissp</code>) or <code>held_cert_id</code>; <code>occurred_on</code>{' '}
           (YYYY-MM-DD); <code>title</code>; <code>activity_type</code> (canonical key, defaults to
@@ -73,8 +73,8 @@ export function ImportPage() {
           <code>category</code>; <code>status</code> (accepted default; claimed / submitted /
           rejected); <code>issuer_reference</code>; <code>provider</code>.
         </p>
-        <pre className="overflow-x-auto rounded bg-muted p-2 text-[11px]">{TEMPLATE}</pre>
-        <Button size="sm" variant="outline" className="mt-2" onClick={() => setCsv(TEMPLATE)}>
+        <pre className="overflow-x-auto rounded bg-panel-strong p-2 text-[11px]">{TEMPLATE}</pre>
+        <Button size="sm" className="mt-2" onClick={() => setCsv(TEMPLATE)}>
           Use template
         </Button>
       </Card>

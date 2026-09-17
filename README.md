@@ -6,7 +6,7 @@ A single-owner web app that tracks continuing-education credits and maintenance 
 
 This is a personal project, entirely vibecoded with Claude. It exists because the author holds certifications from several bodies and got tired of spreadsheets. It is not a product, has no roadmap beyond the author's needs, and makes no promises about the accuracy of any rule figure. Read `NOTICE.md`.
 
-> Status: usable for the author's own tracking. Built, deployed and validated on Workers Paid and on Docker.
+> Status: **v1.0.0**. In daily use by the author. Built, deployed and validated on Workers Paid and on Docker.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lotus-infosec/cpe-pct)
 
@@ -44,11 +44,23 @@ Nothing is applied silently. The app suggests; you confirm or override.
 - Catalog of certifying bodies and their rules as versioned, cited data. Adding a credential is a selection, not data entry.
 - Activity logging in minutes, with suggested credit fan-out across all held certifications.
 - Per-cycle standing that names exactly which constraint fails: cycle total, annual floor, category cap, unpaid fee, prerequisite, or missing attestation.
+- Credit applications tracked through claimed → submitted → accepted or rejected, with the issuer's reference.
 - Evidence upload with content hashing and PDF text extraction into draft activities.
 - Maintenance fee and membership tracking, renewal rollover, scheduled warnings via webhook or Discord.
-- Body-aware audit exports in the shape each body's worksheet expects. You submit; the tool never touches an issuer portal.
+- Body-aware audit exports in the shape each body's worksheet expects, per cycle or for any selection of activities. You submit; the tool never touches an issuer portal.
+- Every list is searchable, filterable, sortable and paginated, with multi-select for bulk export and delete.
 - Portable backup and verified restore between the two deploy targets.
 - Backfill of already-submitted credits by CSV import.
+
+## Screenshots
+
+All screenshots use synthetic demo data.
+
+| Log once, credit everywhere                                                                                                    | Why a cycle stands where it does                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| ![Credit fan-out for one activity: a suggested value per held certification, with the rule that produced it.](docs/fanout.png) | ![A cycle page: each constraint met or failing, the fee schedule, and credit applications.](docs/cycle.png) |
+| **Activities, with a bulk selection**                                                                                          | **On a phone**                                                                                              |
+| ![The activities list with three rows selected and the export and delete bar showing.](docs/activities.png)                    | <img src="docs/phone.png" alt="The dashboard at phone width." width="260">                                  |
 
 ## Quickstart
 
@@ -62,11 +74,13 @@ docker compose -f docker/compose.yml up -d
 
 Open `http://localhost:8787`. The first visit asks for an owner password. Data (SQLite file and evidence) lives on the `data` volume mounted at `/data`. No external services, no outbound calls except the webhooks you configure and the update check you press.
 
+Optional: behind a reverse proxy that already authenticates you, set `AUTH_MODE=trusted-header` and the proxy's user header in `TRUSTED_HEADER_NAME` (default `Remote-User`). The proxy must strip that header from incoming requests, because its presence alone grants access.
+
 Fast development loop: `npm install`, then `npm run dev:node` and `npm run dev:web` (port 5173, API proxied).
 
 ### Cloudflare Workers (Workers Paid)
 
-Requires a Workers Paid plan: the committed `limits.cpu_ms` is rejected on Free, and PDF extraction and password hashing need the headroom. D1 and R2 stay within their free allowances for a single user (D1 free: 5 GB, 100k writes/day; R2 free: 10 GB, egress free).
+PDF extraction and password hashing need the Paid CPU headroom. D1 and R2 stay within their free allowances for a single user (D1 free: 5 GB, 100k writes/day; R2 free: 10 GB, egress free).
 
 Press the button at the top of this page, or deploy from your own machine:
 
@@ -99,7 +113,7 @@ The full list of differences is in `docs/degradation.md`.
 
 ## Backup and restore
 
-`GET /api/backup` returns one zip: a SQL dump of every table, a manifest with per-table checksums and every evidence hash, and the evidence files. Restore it into a fresh instance before setup, or into a running one with the wipe option; the restore verifies itself. From a terminal:
+`GET /api/backup` returns one zip: a SQL dump of every table, a manifest with per-table checksums and every evidence hash, and the evidence files. Restore it into a fresh instance before setup, or into one that already holds data with `--force`, which wipes it first; the restore verifies itself. From a terminal:
 
 ```
 CPE_URL=http://localhost:8787 CPE_PASSWORD=... npm run backup -- today.zip
@@ -129,7 +143,7 @@ These are out of scope and will be declined as contributions:
 ## Security notes
 
 - Zero secrets at deploy time on either target.
-- Single owner. Local password auth with PBKDF2 via WebCrypto and HttpOnly, SameSite cookies. Cloudflare Access or a trusted-header reverse proxy can be layered in front as an optional extra.
+- Single owner. Local password auth with PBKDF2-SHA256 (600,000 iterations) via WebCrypto and HttpOnly, SameSite cookies. Cloudflare Access or a trusted-header reverse proxy can be layered in front as an optional extra.
 - Evidence and rule data stay on infrastructure you control: your Cloudflare account or your disk.
 - Repository hygiene (secret scanning, pinned actions, branch protection, noreply commit identity) is described in `SECURITY.md`. Vulnerability reports go through GitHub private advisories, not public issues.
 - Tests and fixtures use synthetic certification and member numbers only.

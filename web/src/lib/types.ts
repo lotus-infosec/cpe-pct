@@ -183,16 +183,3 @@ export interface Membership {
   memberNumber: string | null;
   since: string | null;
 }
-export interface Payment {
-  id: string;
-  targetType: 'cycle' | 'membership';
-  targetId: string;
-  periodStart: string;
-  periodEnd: string;
-  dueOn: string;
-  amountCents: number;
-  currency: string;
-  paidOn: string | null;
-  status: 'due' | 'paid' | 'waived';
-  confirmationRef: string | null;
-}

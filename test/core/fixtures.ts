@@ -1,5 +1,5 @@
-// Synthetic bodies exercising the mechanics in CPETracker/docs/worked-examples.md.
-// Values are ILLUSTRATIVE (see that file); real bodies live in catalog/bodies with cited sources.
+// Synthetic bodies that exercise the rule mechanics.
+// Values are ILLUSTRATIVE; real bodies live in catalog/bodies with cited sources.
 import type {
   Activity,
   CreditApplication,

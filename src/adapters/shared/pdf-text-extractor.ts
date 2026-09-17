@@ -1,7 +1,7 @@
 // PdfTextExtractor via unpdf (pdf.js serverless build). Same class on both targets.
 // Budget: page cap and a wall-clock deadline checked between pages. Over budget → 'budget-exceeded'
-// so the caller can fall back to a job (AGENTS §6.3(a)).
-import { extractText, getDocumentProxy } from 'unpdf';
+// so the caller can fall back to a job.
+import { getDocumentProxy } from 'unpdf';
 import type { CpuBudget, Extraction, TextExtractor } from '../../ports';
 
 export class PdfTextExtractor implements TextExtractor {
@@ -39,10 +39,4 @@ export class PdfTextExtractor implements TextExtractor {
       return { ok: false, reason: 'error', detail: e instanceof Error ? e.message : String(e) };
     }
   }
-}
-
-/** Convenience used by tests: whole-document extraction without the page loop. */
-export async function extractAll(bytes: Uint8Array): Promise<string> {
-  const pdf = await getDocumentProxy(bytes.slice());
-  return (await extractText(pdf, { mergePages: true })).text;
 }

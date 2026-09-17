@@ -50,24 +50,14 @@ export function NotificationsPage() {
       <Card>
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="font-semibold">Notifications</h2>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-dim">
             The daily scan runs at 06:00 UTC on both targets. Each situation notifies once.
           </span>
           <div className="ml-auto flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => scan.mutate()}
-              disabled={scan.isPending}
-            >
+            <Button size="sm" onClick={() => scan.mutate()} disabled={scan.isPending}>
               Run scan now
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => retry.mutate()}
-              disabled={retry.isPending}
-            >
+            <Button size="sm" onClick={() => retry.mutate()} disabled={retry.isPending}>
               Retry pending sends
             </Button>
             <Button size="sm" variant="ghost" onClick={() => readAll.mutate()}>
@@ -76,13 +66,13 @@ export function NotificationsPage() {
           </div>
         </div>
         {scan.data && (
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-dim">
             Scan: {scan.data.derived} derived, {scan.data.inserted} new, {scan.data.sent} sent,{' '}
             {scan.data.failed} failed sends.
           </p>
         )}
         {retry.data && (
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-dim">
             Retry: {retry.data.sent} sent, {retry.data.failed} failed.
           </p>
         )}
@@ -90,9 +80,7 @@ export function NotificationsPage() {
       </Card>
       <Card>
         {q.data?.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Nothing yet. Run a scan to check every open cycle now.
-          </p>
+          <p className="text-sm text-dim">Nothing yet. Run a scan to check every open cycle now.</p>
         )}
         <ul className="divide-y">
           {q.data?.map((n) => (
@@ -100,7 +88,7 @@ export function NotificationsPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={tone(n.severity)}>{n.severity}</Badge>
                 <span className="font-medium">{n.title}</span>
-                <span className="text-xs text-muted-foreground">{timestamp(n.createdAt)}</span>
+                <span className="text-xs text-dim">{timestamp(n.createdAt)}</span>
                 <Badge>{n.status}</Badge>
                 {n.status !== 'read' && (
                   <Button
@@ -113,7 +101,7 @@ export function NotificationsPage() {
                   </Button>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">{n.body}</p>
+              <p className="text-xs text-dim">{n.body}</p>
             </li>
           ))}
         </ul>
@@ -151,11 +139,11 @@ export function SettingsPage() {
         method: 'POST',
       }),
   });
-  if (q.isPending) return <p className="text-sm text-muted-foreground">Loading…</p>;
+  if (q.isPending) return <p className="text-sm text-dim">Loading…</p>;
   return (
     <Card>
       <h2 className="mb-1 font-semibold">Notification settings</h2>
-      <p className="mb-3 text-xs text-muted-foreground">
+      <p className="mb-3 text-xs text-dim">
         URLs are stored in this instance's database only and are used solely to POST the
         notifications you see on the Notifications page. Leave blank to disable. In-app
         notifications always work.
@@ -183,13 +171,13 @@ export function SettingsPage() {
         >
           Save
         </Button>
-        <Button variant="outline" onClick={() => test.mutate()} disabled={test.isPending}>
+        <Button onClick={() => test.mutate()} disabled={test.isPending}>
           Send a test
         </Button>
       </div>
       <ErrorText error={save.error ?? test.error} />
       {test.data && (
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="mt-2 text-xs text-dim">
           Test:{' '}
           {test.data.results
             .map((r, i) => `#${i + 1} ${r.ok ? 'ok' : `failed (${r.detail})`}`)

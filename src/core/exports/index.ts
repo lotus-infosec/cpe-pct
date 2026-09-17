@@ -6,11 +6,4 @@ import { comptia } from './comptia';
 export const builders: Record<string, Builder> = { isc2, comptia };
 export { generic } from './generic';
 export { selectionBundle } from './selection';
-export type {
-  Builder,
-  ExportBundle,
-  ExportInput,
-  ExportApplication,
-  SelectionActivity,
-  SelectionInput,
-} from './types';
+export type { ExportInput, ExportApplication, SelectionActivity, SelectionInput } from './types';
