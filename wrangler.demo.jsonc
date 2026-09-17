@@ -1,0 +1,38 @@
+// Public demo (demo branch only). Deploy with `npm run demo:release`; see docs/demo.md.
+// Its own Worker, D1 database and R2 bucket, so it can never touch a real deployment. Bindings keep
+// the same names as wrangler.jsonc so the generated `Env` type fits both entrypoints.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cpe-pct-demo",
+  "main": "src/entry.demo.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cpe-pct-demo",
+      "migrations_dir": "src/db/migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "EVIDENCE",
+      "bucket_name": "cpe-pct-demo-evidence"
+    }
+  ],
+  // Every minute: the job runner. 00:00 and 12:00 UTC: empty the demo (DEMO_RESET_CRON in src/demo).
+  "triggers": {
+    "crons": ["* * * * *", "0 */12 * * *"]
+  },
+  "limits": {
+    "cpu_ms": 30000
+  },
+  "observability": {
+    "enabled": false
+  }
+}

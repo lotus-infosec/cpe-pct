@@ -6,7 +6,7 @@
   "overrides": [
     {
       "comment": "The Deploy to Cloudflare button's parser rejects trailing commas in wrangler.jsonc, so Prettier must not add them back.",
-      "files": "wrangler.jsonc",
+      "files": ["wrangler.jsonc", "wrangler.demo.jsonc"],
       "options": { "trailingComma": "none" }
     }
   ]

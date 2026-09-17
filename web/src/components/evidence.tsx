@@ -147,7 +147,6 @@ export function EvidenceList({ activityId }: { activityId: string }) {
     mutationFn: (id: string) => api(`/api/evidence/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries(),
   });
-  const [open, setOpen] = useState<string | null>(null);
   if (!q.data?.length) return null;
   return (
     <ul className="divide-y">
@@ -159,20 +158,6 @@ export function EvidenceList({ activityId }: { activityId: string }) {
               {e.contentType} · {bytes(e.sizeBytes)}
             </span>
             <Badge tone={STATUS[e.extractionStatus][1]}>{STATUS[e.extractionStatus][0]}</Badge>
-            <button
-              className="text-xs underline"
-              onClick={() => setOpen(open === e.id ? null : e.id)}
-            >
-              {open === e.id ? 'hide' : 'view'}
-            </button>
-            <a
-              className="text-xs underline"
-              href={`/api/evidence/${e.id}/content`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              open
-            </a>
             <Button
               size="sm"
               variant="ghost"
@@ -185,20 +170,6 @@ export function EvidenceList({ activityId }: { activityId: string }) {
             </Button>
           </div>
           <p className="font-mono text-[10px] text-dim">sha256 {e.sha256}</p>
-          {open === e.id &&
-            (e.contentType === 'application/pdf' ? (
-              <iframe
-                title={e.filename}
-                src={`/api/evidence/${e.id}/content`}
-                className="mt-2 h-[70vh] w-full rounded border"
-              />
-            ) : (
-              <img
-                alt={e.filename}
-                src={`/api/evidence/${e.id}/content`}
-                className="mt-2 max-h-[70vh] rounded border"
-              />
-            ))}
         </li>
       ))}
     </ul>

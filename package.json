@@ -27,6 +27,8 @@
     "cf:types": "wrangler types",
     "deploy": "npm run build:web && wrangler d1 migrations apply DB --remote && wrangler deploy",
     "release": "gitleaks detect --redact --no-banner && npm run deploy",
+    "demo:dev": "npm run build:web && wrangler d1 migrations apply DB --local -c wrangler.demo.jsonc && wrangler dev -c wrangler.demo.jsonc --test-scheduled",
+    "demo:release": "gitleaks detect --redact --no-banner && npm run build:web && wrangler d1 migrations apply DB --remote -c wrangler.demo.jsonc && wrangler deploy -c wrangler.demo.jsonc",
     "catalog:check": "tsx scripts/compile-catalog.ts",
     "catalog:compile": "tsx scripts/compile-catalog.ts --write",
     "backup": "tsx scripts/backup.ts",

@@ -111,9 +111,7 @@ export function ExportsPage() {
                 {e.progress?.bytes ? ` · ${bytes(e.progress.bytes)}` : ''}
               </span>
               {e.status === 'ready' && (
-                <a className="ml-auto text-xs underline" href={`/api/exports/${e.id}/download`}>
-                  download
-                </a>
+                <span className="ml-auto text-xs text-dim">download is off in the demo</span>
               )}
               <Button size="sm" variant="ghost" onClick={() => del.mutate(e.id)}>
                 remove

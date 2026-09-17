@@ -3,7 +3,7 @@ name: security
 on:
   pull_request:
   push:
-    branches: [main, dev]
+    branches: [main, dev, demo]
 permissions:
   contents: read
 jobs:

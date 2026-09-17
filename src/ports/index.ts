@@ -70,7 +70,7 @@ export interface TickBudget {
 // ── Auth ─────────────────────────────────────────────────────────────
 export interface Principal {
   id: 'owner';
-  via: 'local' | 'cf-access' | 'trusted-header';
+  via: 'local' | 'cf-access' | 'trusted-header' | 'demo';
 }
 export interface Authenticator {
   authenticate(req: Request): Promise<Principal | null>;

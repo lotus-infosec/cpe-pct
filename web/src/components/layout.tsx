@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type FormEvent } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   BadgeCheck,
   Bell,
@@ -9,7 +9,6 @@ import {
   FileDown,
   LayoutDashboard,
   ListChecks,
-  LogOut,
   Menu,
   Paperclip,
   Search,
@@ -17,6 +16,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import { DemoBanner } from '@/components/demo';
 import { api } from '@/lib/api';
 import { routeTitle, useDocumentTitle } from '@/lib/title';
 import { cn } from '@/lib/utils';
@@ -174,27 +174,6 @@ function Nav({ unread }: { unread: number }) {
   );
 }
 
-function LogOutButton({ className }: { className?: string }) {
-  const qc = useQueryClient();
-  const logout = useMutation({
-    mutationFn: () => api('/api/logout', { method: 'POST' }),
-    onSuccess: () => qc.invalidateQueries(),
-  });
-  return (
-    <button
-      type="button"
-      onClick={() => logout.mutate()}
-      className={cn(
-        'flex h-8 items-center gap-2.5 rounded-control px-2.5 text-sm text-dim hover:bg-panel hover:text-fg',
-        className,
-      )}
-    >
-      <LogOut aria-hidden className="size-4" strokeWidth={1.5} />
-      Log out
-    </button>
-  );
-}
-
 export function Layout() {
   const unread = useUnread();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -219,9 +198,6 @@ export function Layout() {
         </div>
         <GlobalSearch />
         <Nav unread={unread} />
-        <div className="mt-auto border-t border-hairline pt-3">
-          <LogOutButton className="w-full" />
-        </div>
       </aside>
 
       {/* Top bar below 1024px */}
@@ -265,13 +241,11 @@ export function Layout() {
             <GlobalSearch />
           </div>
           <Nav unread={unread} />
-          <div className="mt-5 border-t border-hairline pt-3">
-            <LogOutButton className="w-full" />
-          </div>
         </div>
       </header>
 
       <div className="flex min-w-0 flex-col">
+        <DemoBanner />
         <main id="main" className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-6 sm:px-6 lg:py-8">
           <Outlet />
         </main>

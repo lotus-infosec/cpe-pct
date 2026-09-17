@@ -2,6 +2,8 @@
 
 # CPE PCT — CPE Personal Certification Tracker
 
+> **This is the `demo` branch.** It runs the public, shared demo: no accounts, capped, emptied every 12 hours. What differs from `main` and how it is deployed is in [`docs/demo.md`](docs/demo.md). To run CPE PCT for yourself, use the [`main` branch](https://github.com/lotus-infosec/cpe-pct/tree/main).
+
 A single-owner web app that tracks continuing-education credits and maintenance fees across every professional certification you hold. Log an activity once; it fans out to every certification it can credit, at each issuing body's own conversion rate, category rules, and caps. One codebase deploys to Cloudflare Workers or to your own hardware with Docker Compose. Same code, no forked business logic.
 
 This is a personal project, entirely vibecoded with Claude. It exists because the author holds certifications from several bodies and got tired of spreadsheets. It is not a product, has no roadmap beyond the author's needs, and makes no promises about the accuracy of any rule figure. Read `NOTICE.md`.

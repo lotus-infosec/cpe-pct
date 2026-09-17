@@ -3,7 +3,7 @@ name: ci
 on:
   pull_request:
   push:
-    branches: [main, dev]
+    branches: [main, dev, demo]
 permissions:
   contents: read
 env:
@@ -77,6 +77,8 @@ jobs:
       - run: npm ci
       - run: npm run build:web
       - run: npx wrangler deploy --dry-run --outdir dist-cf
+      # demo branch: the public demo's own config must build too.
+      - run: npx wrangler deploy --dry-run -c wrangler.demo.jsonc --outdir dist-cf-demo
   # Aggregate job. Branch protection requires the single check named "ci".
   ci:
     needs: [typecheck, lint, test, migrations, docker, wrangler-dry-run]

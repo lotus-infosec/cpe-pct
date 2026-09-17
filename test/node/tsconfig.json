@@ -2,5 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "types": ["node"] },
   "include": ["./**/*.ts", "../../src/**/*.ts"],
-  "exclude": ["../../src/entry.cloudflare.ts", "../../src/adapters/cloudflare/**/*"]
+  "exclude": [
+    "../../src/entry.cloudflare.ts",
+    "../../src/entry.demo.ts",
+    "../../src/adapters/cloudflare/**/*"
+  ]
 }

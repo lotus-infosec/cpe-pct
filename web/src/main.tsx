@@ -12,8 +12,9 @@ import { CyclePage } from './routes/cycle';
 import { ApplicationsPage } from './routes/applications';
 import { ImportPage } from './routes/import';
 import { AddEvidencePage } from './components/evidence';
-import { NotificationsPage, SettingsPage } from './routes/notifications';
-import { BackupPage, ExportsPage } from './routes/exports';
+import { NotificationsPage } from './routes/notifications';
+import { ExportsPage } from './routes/exports';
+import { DemoOffPage } from './components/demo';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -36,9 +37,12 @@ createRoot(document.getElementById('root')!).render(
               <Route path="import" element={<ImportPage />} />
               <Route path="evidence" element={<AddEvidencePage />} />
               <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="settings" element={<SettingsPage />} />
+              <Route
+                path="settings"
+                element={<DemoOffPage title="Settings" what="Sending notifications" />}
+              />
               <Route path="exports" element={<ExportsPage />} />
-              <Route path="backup" element={<BackupPage />} />
+              <Route path="backup" element={<DemoOffPage title="Backup" what="Backup" />} />
               <Route path="*" element={<Dashboard />} />
             </Route>
           </Routes>
