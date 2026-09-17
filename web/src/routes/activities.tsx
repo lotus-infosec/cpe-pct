@@ -2,8 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router';
 import { Plus } from 'lucide-react';
-import { api, fmtCredits } from '@/lib/api';
-import { fetchAll, fmtCount, useList, useListQuery } from '@/lib/list';
+import { api } from '@/lib/api';
+import { count, credits } from '@/lib/format';
+import { fetchAll, useList, useListQuery } from '@/lib/list';
 import {
   BulkDeleteDialog,
   ExportStatusLine,
@@ -18,6 +19,7 @@ import type { Activity, ActivityRow, ActivityType, Held } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
   Badge,
+  CertLink,
   Button,
   Dialog,
   ErrorText,
@@ -86,8 +88,7 @@ export function Activities() {
   const [result, setResult] = useState<string | null>(null);
   const exp = useSelectionExport();
   const typeLabel = (key: string) => types.data?.find((t) => t.key === key)?.label ?? key;
-  const abbr = (heldId: string) =>
-    held.data?.find((h) => h.id === heldId)?.certification.abbreviation ?? '?';
+  const heldById = (heldId: string) => held.data?.find((h) => h.id === heldId);
 
   const chips: Chip[] = [
     list.q && { key: 'q', label: `Search: ${list.q}`, onRemove: () => list.set({ q: '' }) },
@@ -145,9 +146,9 @@ export function Activities() {
           setConfirming(false);
           sel.clear();
           setResult(
-            `Deleted ${fmtCount(r.deleted)} ${r.deleted === 1 ? 'activity' : 'activities'} and ${fmtCount(r.applicationsRemoved)} credit applications.` +
+            `Deleted ${count(r.deleted)} ${r.deleted === 1 ? 'activity' : 'activities'} and ${count(r.applicationsRemoved)} credit applications.` +
               (r.refused.length
-                ? ` ${fmtCount(r.refused.length)} with submitted or accepted credit ${r.refused.length === 1 ? 'was' : 'were'} kept.`
+                ? ` ${count(r.refused.length)} with submitted or accepted credit ${r.refused.length === 1 ? 'was' : 'were'} kept.`
                 : ''),
           );
         }}
@@ -276,13 +277,16 @@ export function Activities() {
                       <span className="num block text-xs">{a.durationMinutes} min</span>
                     ) : null}
                   </Td>
-                  <Td numeric>{a.creditTotalX100 ? fmtCredits(a.creditTotalX100) : ''}</Td>
+                  <Td numeric>{a.creditTotalX100 ? credits(a.creditTotalX100) : ''}</Td>
                   <Td className="text-xs">
                     {Object.keys(a.appliedTo).length > 0 ? (
                       <span className="flex flex-wrap gap-x-2 gap-y-0.5">
                         {Object.entries(a.appliedTo).map(([heldId, x100]) => (
                           <span key={heldId} className="num whitespace-nowrap text-dim">
-                            <span className="text-fg">{abbr(heldId)}</span> {fmtCredits(x100)}
+                            <CertLink cycles={heldById(heldId)?.cycles}>
+                              {heldById(heldId)?.certification.abbreviation ?? '?'}
+                            </CertLink>{' '}
+                            {credits(x100)}
                           </span>
                         ))}
                       </span>

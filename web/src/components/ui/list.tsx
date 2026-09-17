@@ -13,7 +13,8 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { fmtCount, MAX_Q, PER_PAGE, type Dir } from '@/lib/list';
+import { count } from '@/lib/format';
+import { MAX_Q, PER_PAGE, type Dir } from '@/lib/list';
 import { EmptyState } from './feedback';
 
 const SEARCH_DEBOUNCE_MS = 250;
@@ -237,8 +238,8 @@ export function PerPageSelect({
 const range = (page: number, perPage: number, total: number) => {
   if (total === 0) return 'No results';
   const from = (page - 1) * perPage + 1;
-  if (from > total) return `${fmtCount(total)} results`;
-  return `Showing ${fmtCount(from)} to ${fmtCount(Math.min(page * perPage, total))} of ${fmtCount(total)}`;
+  if (from > total) return `${count(total)} results`;
+  return `Showing ${count(from)} to ${count(Math.min(page * perPage, total))} of ${count(total)}`;
 };
 
 /** The result count, announced politely when it changes. */

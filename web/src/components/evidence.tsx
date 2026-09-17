@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { ApiError, api } from '@/lib/api';
+import { bytes } from '@/lib/format';
 import { useList, useListQuery } from '@/lib/list';
 import { EXTRACTION_STATUS, options } from '@/lib/labels';
 import { cn } from '@/lib/utils';
@@ -51,12 +52,6 @@ export interface UploadResult {
   from: Record<string, 'extracted'>;
 }
 
-const fmtBytes = (n: number) =>
-  n < 1024
-    ? `${n} B`
-    : n < 1048576
-      ? `${(n / 1024).toFixed(1)} KB`
-      : `${(n / 1048576).toFixed(1)} MB`;
 const STATUS: Record<EvidenceRow['extractionStatus'], [string, 'ok' | 'warn' | 'muted' | 'bad']> = {
   done: ['text extracted', 'ok'],
   pending: ['extraction queued', 'warn'],
@@ -161,7 +156,7 @@ export function EvidenceList({ activityId }: { activityId: string }) {
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium">{e.filename}</span>
             <span className="text-xs text-muted-foreground">
-              {e.contentType} · {fmtBytes(e.sizeBytes)}
+              {e.contentType} · {bytes(e.sizeBytes)}
             </span>
             <Badge tone={STATUS[e.extractionStatus][1]}>{STATUS[e.extractionStatus][0]}</Badge>
             <button
@@ -364,7 +359,7 @@ function AllEvidence() {
                     </a>
                   </Td>
                   <Td numeric className="whitespace-nowrap">
-                    {fmtBytes(e.sizeBytes)}
+                    {bytes(e.sizeBytes)}
                   </Td>
                   <Td className="num whitespace-nowrap">{e.uploadedAt.slice(0, 10)}</Td>
                   <Td>
