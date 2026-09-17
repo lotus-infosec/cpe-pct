@@ -1,3 +1,5 @@
+<p align="center"><img src="web/public/og.png" alt="CPE PCT" width="640"></p>
+
 # CPE PCT — CPE Personal Certification Tracker
 
 A single-owner web app that tracks continuing-education credits and maintenance fees across every professional certification you hold. Log an activity once; it fans out to every certification it can credit, at each issuing body's own conversion rate, category rules, and caps. One codebase deploys to Cloudflare Workers or to your own hardware with Docker Compose. Same code, no forked business logic.
@@ -9,6 +11,8 @@ This is a personal project, entirely vibecoded with Claude. It exists because th
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lotus-infosec/cpe-pct)
 
 The button needs a **Workers Paid** plan. The committed `limits.cpu_ms` is rejected on Free accounts, so a Free deploy fails at the last step. If you do not want to pay Cloudflare, the Docker path below costs nothing and runs the same code.
+
+![The CPE PCT dashboard: standing for every certification held, with credits against each requirement and days to cycle end. Demo data.](docs/dashboard.png)
 
 ## Why the activity-centric model matters
 
