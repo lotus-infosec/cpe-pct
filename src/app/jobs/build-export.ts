@@ -5,7 +5,16 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { zipSync } from 'fflate';
 import * as s from '../../db/schema';
 import { newId, type AppContext } from '../context';
-import { builders, generic, type ExportApplication, type ExportInput } from '../../core/exports';
+import {
+  builders,
+  generic,
+  selectionBundle,
+  type ExportApplication,
+  type ExportInput,
+  type SelectionActivity,
+  type SelectionInput,
+} from '../../core/exports';
+import { chunks } from '../activity-selection';
 import type { ActivityType } from '../../core/domain/activity-types';
 import { sendPending } from './renewal-scan';
 
@@ -114,13 +123,95 @@ export async function loadExportInput(
   };
 }
 
+export async function loadSelectionInput(
+  ctx: AppContext,
+  activityIds: string[],
+): Promise<SelectionInput> {
+  const db = ctx.db;
+  const activities: SelectionActivity[] = [];
+  for (const part of chunks(activityIds)) {
+    const acts = await db.select().from(s.activities).where(inArray(s.activities.id, part)).all();
+    const apps = await db
+      .select({ a: s.creditApplications, c: s.certifications, b: s.bodies, cy: s.cycles })
+      .from(s.creditApplications)
+      .innerJoin(s.heldCertifications, eq(s.heldCertifications.id, s.creditApplications.heldCertId))
+      .innerJoin(s.certifications, eq(s.certifications.id, s.heldCertifications.certificationId))
+      .innerJoin(s.bodies, eq(s.bodies.id, s.certifications.bodyId))
+      .innerJoin(s.cycles, eq(s.cycles.id, s.creditApplications.cycleId))
+      .where(inArray(s.creditApplications.activityId, part))
+      .all();
+    const links = await db
+      .select({ l: s.activityEvidence, e: s.evidence })
+      .from(s.activityEvidence)
+      .innerJoin(s.evidence, eq(s.evidence.id, s.activityEvidence.evidenceId))
+      .where(inArray(s.activityEvidence.activityId, part))
+      .all();
+    for (const act of acts)
+      activities.push({
+        id: act.id,
+        title: act.title,
+        activityType: act.activityType as ActivityType,
+        occurredOn: act.occurredOn,
+        provider: act.provider,
+        description: act.description,
+        durationMinutes: act.durationMinutes,
+        itemCount: act.itemCount,
+        status: act.status,
+        applications: apps
+          .filter((x) => x.a.activityId === act.id)
+          .map((x) => ({
+            certification: x.c.abbreviation,
+            bodyName: x.b.name,
+            cycleSequence: x.cy.sequence,
+            creditsX100: x.a.creditsX100,
+            categoryKey: x.a.categoryKey,
+            status: x.a.status,
+            issuerReference: x.a.issuerReference,
+          })),
+        evidence: links
+          .filter((l) => l.l.activityId === act.id)
+          .map((l) => ({
+            evidenceId: l.e.id,
+            filename: l.e.filename,
+            sha256: l.e.sha256,
+            objectKey: l.e.objectKey,
+            contentType: l.e.contentType,
+            sizeBytes: l.e.sizeBytes,
+          })),
+      });
+  }
+  return { activities, generatedAt: ctx.clock.now().toISOString() };
+}
+
+/** The bundle to zip, and the words the ready notification uses for it. */
+async function loadBundle(ctx: AppContext, row: typeof s.exports_.$inferSelect) {
+  if (row.activityIds) {
+    const input = await loadSelectionInput(ctx, row.activityIds);
+    const bundle = selectionBundle(input);
+    return {
+      bundle,
+      key: `selection:export_ready:${row.id}`,
+      title: `Selection export ready`,
+      body: (files: number, kb: string) =>
+        `${input.activities.length} activities with ${bundle.files.length} data files and ${files} evidence files (${kb} KB).`,
+    };
+  }
+  const input = row.cycleId ? await loadExportInput(ctx, row.cycleId) : null;
+  if (!input) throw new Error('cycle missing');
+  const build = builders[input.bodyId] ?? generic;
+  return {
+    bundle: build(input),
+    key: `${row.cycleId}:export_ready:${row.id}`,
+    title: `${input.abbreviation} (${input.bodyName}): export ready`,
+    body: (files: number, kb: string) =>
+      `Cycle ${input.cycle.sequence} bundle with ${input.applications.length} applications and ${files} evidence files (${kb} KB).`,
+  };
+}
+
 export async function buildExport(ctx: AppContext, exportId: string): Promise<void> {
   const row = await ctx.db.select().from(s.exports_).where(eq(s.exports_.id, exportId)).get();
   if (!row) return;
-  const input = await loadExportInput(ctx, row.cycleId);
-  if (!input) throw new Error('cycle missing');
-  const build = builders[input.bodyId] ?? generic;
-  const bundle = build(input);
+  const { bundle, key: notificationKey, title, body } = await loadBundle(ctx, row);
   const enc = new TextEncoder();
   const entries: Record<string, [Uint8Array, { level: 0 }]> = {};
   for (const f of bundle.files) entries[f.name] = [enc.encode(f.content), { level: 0 }];
@@ -158,11 +249,11 @@ export async function buildExport(ctx: AppContext, exportId: string): Promise<vo
       .insert(s.notifications)
       .values({
         id: newId(),
-        key: `${row.cycleId}:export_ready:${exportId}`,
+        key: notificationKey,
         kind: 'export_ready',
         severity: 'info',
-        title: `${input.abbreviation} (${input.bodyName}): export ready`,
-        body: `Cycle ${input.cycle.sequence} bundle with ${input.applications.length} applications and ${done} evidence files (${(zip.byteLength / 1024).toFixed(0)} KB).`,
+        title,
+        body: body(done, (zip.byteLength / 1024).toFixed(0)),
         status: 'pending',
         createdAt: now,
       })

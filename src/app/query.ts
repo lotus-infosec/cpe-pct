@@ -57,7 +57,8 @@ const perPage = z
   .optional()
   .transform((v) => (v ? Number(v) : DEFAULT_PER_PAGE));
 
-const q = z
+/** A search term: trimmed, control characters folded, at most 100 characters, empty means absent. */
+export const qParam = z
   .string()
   .max(MAX_Q * 4, 'too long')
   .transform(cleanQ)
@@ -79,7 +80,7 @@ export function listQuery<S extends string, E extends z.ZodRawShape>(
   return z.object({
     page,
     per_page: perPage,
-    q,
+    q: qParam,
     sort: z
       .enum(sorts)
       .optional()

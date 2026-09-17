@@ -243,6 +243,7 @@ export function AddEvidencePage() {
 }
 
 const EVIDENCE_SORTS = ['uploadedAt', 'filename', 'size'] as const;
+const LINKED = { linked: 'Linked to an activity', unlinked: 'Unlinked' } as const;
 type EvidenceSort = (typeof EVIDENCE_SORTS)[number];
 
 function AllEvidence() {
@@ -250,9 +251,18 @@ function AllEvidence() {
     sorts: EVIDENCE_SORTS,
     defaultSort: 'uploadedAt',
     defaultDir: 'desc',
-    filters: { status: Object.keys(EXTRACTION_STATUS) },
+    filters: { status: Object.keys(EXTRACTION_STATUS), linked: Object.keys(LINKED) },
   });
-  const q = useListQuery<EvidenceRow, EvidenceSort, 'status'>('evidence', '/api/evidence', list);
+  const q = useListQuery<EvidenceRow, EvidenceSort, 'status' | 'linked'>(
+    'evidence',
+    '/api/evidence',
+    list,
+  );
+  const qc = useQueryClient();
+  const remove = useMutation({
+    mutationFn: (id: string) => api(`/api/evidence/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['evidence'] }),
+  });
   const data = q.data;
   const chips: Chip[] = [
     list.q && { key: 'q', label: `Search: ${list.q}`, onRemove: () => list.set({ q: '' }) },
@@ -260,6 +270,11 @@ function AllEvidence() {
       key: 'status',
       label: EXTRACTION_STATUS[list.filters.status as keyof typeof EXTRACTION_STATUS].label,
       onRemove: () => list.set({ status: '' }),
+    },
+    list.filters.linked && {
+      key: 'linked',
+      label: LINKED[list.filters.linked as keyof typeof LINKED],
+      onRemove: () => list.set({ linked: '' }),
     },
   ].filter(Boolean) as Chip[];
   const sortTh = (
@@ -298,9 +313,16 @@ function AllEvidence() {
           options={options(EXTRACTION_STATUS)}
           onChange={(v) => list.set({ status: v })}
         />
+        <FilterSelect
+          label="Links"
+          value={list.filters.linked}
+          options={options(LINKED)}
+          onChange={(v) => list.set({ linked: v })}
+        />
         <PerPageSelect value={list.perPage} onChange={(n) => list.set({ per_page: n })} />
       </Toolbar>
       <FilterChips chips={chips} onClearAll={list.clear} />
+      <ErrorText error={remove.error} />
       {q.isPending && <Skeleton rows={5} />}
       {q.isError && <ErrorText error={q.error} />}
       {data && data.total === 0 && (
@@ -322,6 +344,9 @@ function AllEvidence() {
                 {sortTh('uploadedAt', 'Uploaded', 'desc')}
                 <Th>Extraction</Th>
                 <Th>Activities</Th>
+                <Th>
+                  <span className="sr-only">Actions</span>
+                </Th>
               </tr>
             </THead>
             <TBody>
@@ -361,7 +386,27 @@ function AllEvidence() {
                         ))}
                       </span>
                     ) : (
-                      <span className="text-dim">none</span>
+                      <Badge tone="warn">Unlinked</Badge>
+                    )}
+                  </Td>
+                  <Td className="text-right">
+                    {(!e.activityIds || e.activityIds.length === 0) && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={remove.isPending}
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Delete ${e.filename}? The file is removed from storage and cannot be recovered.`,
+                            )
+                          )
+                            remove.mutate(e.id);
+                        }}
+                      >
+                        Delete
+                        <span className="sr-only"> {e.filename}</span>
+                      </Button>
                     )}
                   </Td>
                 </Tr>

@@ -60,3 +60,31 @@ export interface ExportBundle {
 }
 
 export type Builder = (input: ExportInput) => ExportBundle;
+
+/** An arbitrary set of activities, exported before a bulk delete (STAGE8). */
+export interface SelectionActivity {
+  id: string;
+  title: string;
+  activityType: ActivityType;
+  occurredOn: IsoDate;
+  provider: string | null;
+  description: string | null;
+  durationMinutes: number | null;
+  itemCount: number | null;
+  status: 'draft' | 'logged';
+  applications: {
+    certification: string;
+    bodyName: string;
+    cycleSequence: number;
+    creditsX100: CreditsX100;
+    categoryKey: string | null;
+    status: ApplicationStatus;
+    issuerReference: string | null;
+  }[];
+  evidence: ExportApplication['evidence'];
+}
+
+export interface SelectionInput {
+  activities: SelectionActivity[];
+  generatedAt: string;
+}

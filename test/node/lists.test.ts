@@ -380,6 +380,18 @@ describe('bucket definitions', () => {
         asOf,
       ),
     ).toBe('compliant');
+    // Credits met, cycle ended, renewal not recorded: overdue for renewal.
+    expect(
+      standingBucket(
+        'active',
+        [open],
+        st({
+          daysRemaining: -130,
+          totals: { accepted: 100, submitted: 0, claimed: 0, planned: 0 },
+        }),
+        asOf,
+      ),
+    ).toBe('overdue');
     expect(standingBucket('lapsed', [open], st({}), asOf)).toBe('lapsed');
     expect(standingBucket('active', [{ ...open, status: 'lapsed' as const }], null, asOf)).toBe(
       'lapsed',

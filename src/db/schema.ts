@@ -55,10 +55,13 @@ export const notifications = t('notifications', {
   sentAt: text('sent_at'),
 });
 
+// A cycle bundle has a body and a cycle. A selection bundle (STAGE8, "export selection first") has
+// neither and lists its activities instead.
 export const exports_ = t('exports', {
   id: text('id').primaryKey(),
-  bodyId: text('body_id').notNull(),
-  cycleId: text('cycle_id').notNull(),
+  bodyId: text('body_id'),
+  cycleId: text('cycle_id'),
+  activityIds: text('activity_ids', { mode: 'json' }).$type<string[]>(),
   status: text('status', { enum: ['building', 'ready', 'failed'] }).notNull(),
   progress: text('progress', { mode: 'json' }),
   objectKey: text('object_key'),
