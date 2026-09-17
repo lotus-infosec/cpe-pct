@@ -30,5 +30,3 @@ export function sniff(head: Uint8Array): EvidenceType | null {
     return 'image/webp'; // RIFF....WEBP
   return null;
 }
-
-export const isPdf = (t: EvidenceType) => t === 'application/pdf';

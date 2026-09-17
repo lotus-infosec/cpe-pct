@@ -38,7 +38,7 @@ export interface CpuBudget {
   deadlineMs: number;
 }
 
-/** Seam only. v1 ships NullOcr on both targets. */
+/** Seam only, with no implementation: image evidence degrades to manual entry on both targets. */
 export interface ImageOcr {
   recognize(bytes: Uint8Array, contentType: string): Promise<Extraction>;
 }
@@ -96,22 +96,4 @@ export interface Notifier {
 // ── Small ones ───────────────────────────────────────────────────────
 export interface Clock {
   now(): Date;
-}
-export type ConfigKey =
-  'DATA_DIR' | 'AUTH_MODE' | 'TRUSTED_HEADER_NAME' | 'CF_ACCESS_TEAM' | 'CF_ACCESS_AUD';
-export interface Config {
-  get(key: ConfigKey): string | undefined;
-}
-
-/** Everything the app layer needs, built once per target in its entrypoint. */
-export interface Adapters {
-  objectStore: ObjectStore;
-  textExtractor: TextExtractor;
-  imageOcr: ImageOcr;
-  jobQueue: JobQueue;
-  tickSource: TickSource;
-  authenticator: Authenticator;
-  notifiers: Notifier[];
-  clock: Clock;
-  config: Config;
 }

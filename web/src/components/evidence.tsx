@@ -98,7 +98,7 @@ export function EvidenceUpload({
   return (
     <div>
       <label
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-md border border-dashed p-4 text-center text-sm ${drag ? 'bg-muted' : ''}`}
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-md border border-dashed p-4 text-center text-sm ${drag ? 'bg-panel-strong' : ''}`}
         onDragOver={(e) => {
           e.preventDefault();
           setDrag(true);
@@ -113,7 +113,7 @@ export function EvidenceUpload({
         <span>
           {m.isPending ? 'Uploading…' : 'Drop a PDF, PNG, JPEG or WebP here, or click to choose'}
         </span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-dim">
           Up to 20 MB. Hashed and stored on this instance only. Text-layer PDFs pre-fill the
           activity.
         </span>
@@ -126,7 +126,7 @@ export function EvidenceUpload({
       </label>
       <ErrorText error={m.error} />
       {m.data && (
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 text-xs text-dim">
           {m.data.deduplicated ? 'Already on file (same hash); linked.' : 'Stored.'}{' '}
           {STATUS[m.data.extractionStatus][0]}.
           {Object.keys(m.data.from).length > 0 &&
@@ -155,7 +155,7 @@ export function EvidenceList({ activityId }: { activityId: string }) {
         <li key={e.id} className="py-2 text-sm">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium">{e.filename}</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-dim">
               {e.contentType} · {bytes(e.sizeBytes)}
             </span>
             <Badge tone={STATUS[e.extractionStatus][1]}>{STATUS[e.extractionStatus][0]}</Badge>
@@ -184,7 +184,7 @@ export function EvidenceList({ activityId }: { activityId: string }) {
               remove
             </Button>
           </div>
-          <p className="font-mono text-[10px] text-muted-foreground">sha256 {e.sha256}</p>
+          <p className="font-mono text-[10px] text-dim">sha256 {e.sha256}</p>
           {open === e.id &&
             (e.contentType === 'application/pdf' ? (
               <iframe

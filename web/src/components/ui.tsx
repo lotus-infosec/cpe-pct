@@ -16,8 +16,8 @@ import { cn } from '@/lib/utils';
 export { Table, THead, TBody, Tr, Th, SortableTh, Td } from './ui/table';
 export { Dialog } from './ui/dialog';
 export { Progress } from './ui/progress';
-export { CertLink, certCycleId, LIFT, LINKED } from './ui/cert-link';
-export { EmptyState, Skeleton } from './ui/feedback';
+export { CertLink, LIFT, LINKED } from './ui/cert-link';
+export { Skeleton } from './ui/feedback';
 export { PageHeader, Toolbar } from './ui/toolbar';
 export {
   FilterChips,
@@ -29,27 +29,23 @@ export {
   SearchField,
   SortControl,
   type Chip,
-  type Option,
 } from './ui/list';
 
 type ButtonVariant = 'primary' | 'default' | 'ghost' | 'danger';
 
 /**
  * `primary` is the one main action on a screen and the only filled accent button. `default` is the
- * bordered neutral every other action uses. `outline` and `destructive` are the names routes used
- * before STAGE6; they map onto `default` and `danger` and go as pages are rebuilt.
+ * bordered neutral every other action uses.
  */
 export function Button({
   className,
-  variant = 'default',
+  variant: v = 'default',
   size = 'md',
   ...p
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: ButtonVariant | 'outline' | 'destructive';
+  variant?: ButtonVariant;
   size?: 'sm' | 'md';
 }) {
-  const v: ButtonVariant =
-    variant === 'outline' ? 'default' : variant === 'destructive' ? 'danger' : variant;
   return (
     <button
       className={cn(

@@ -184,8 +184,7 @@ export function CyclePage() {
     onSuccess: invalidate,
   });
 
-  if (st.isPending || held.isPending)
-    return <p className="text-sm text-muted-foreground">Loading…</p>;
+  if (st.isPending || held.isPending) return <p className="text-sm text-dim">Loading…</p>;
   if (st.isError || !h || !cycle) return <p className="text-sm text-bad">Cycle not found.</p>;
   const s = st.data;
   const earned = s.totals.accepted + s.totals.submitted + s.totals.claimed;
@@ -200,12 +199,10 @@ export function CyclePage() {
           <h2 className="font-semibold">
             {h.certification.abbreviation} — cycle {cycle.sequence}
           </h2>
-          <span className="num text-sm text-muted-foreground">
-            {dateRange(cycle.startsOn, cycle.endsOn)}
-          </span>
-          <span className="text-sm text-muted-foreground">· rules {cycle.ruleVersionId}</span>
+          <span className="num text-sm text-dim">{dateRange(cycle.startsOn, cycle.endsOn)}</span>
+          <span className="text-sm text-dim">· rules {cycle.ruleVersionId}</span>
           <Badge tone={standing.tone}>{standing.label}</Badge>
-          <span className="ml-auto text-xs text-muted-foreground">
+          <span className="ml-auto text-xs text-dim">
             as of <span className="num">{s.asOf}</span> ·{' '}
             {cycle.status === 'open' ? (
               <span className={DAY_TONE_CLASS[days.tone]}>{days.text}</span>
@@ -251,13 +248,13 @@ export function CyclePage() {
       {fees.data && fees.data.length > 0 && (
         <Card>
           <h3 className="mb-1 font-semibold">Fee schedule</h3>
-          <p className="mb-2 text-xs text-muted-foreground">
+          <p className="mb-2 text-xs text-dim">
             Every fee period this cycle implies ({fees.data[0]!.scope}). Record a payment when you
             pay the issuer; waive with a reason when the issuer waived it or a higher certification
             covers it.
           </p>
           <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted-foreground">
+            <thead className="text-left text-xs text-dim">
               <tr>
                 <th className="py-1 pr-2">Period</th>
                 <th className="pr-2">Due</th>
@@ -299,7 +296,7 @@ export function CyclePage() {
                           value={payOn2}
                           onChange={(e) => setPayOn2(e.target.value)}
                         />
-                        <Button size="sm" variant="outline" onClick={() => payPeriod.mutate(p)}>
+                        <Button size="sm" onClick={() => payPeriod.mutate(p)}>
                           paid
                         </Button>
                         <Input
@@ -333,7 +330,7 @@ export function CyclePage() {
       )}
       <Card>
         <h3 className="mb-2 font-semibold">Credit applications</h3>
-        <p className="mb-2 text-xs text-muted-foreground">
+        <p className="mb-2 text-xs text-dim">
           You submit to the issuer yourself; record the outcome here. claimed → submitted → accepted
           / rejected.
         </p>
@@ -372,7 +369,7 @@ export function CyclePage() {
           >
             <table className="w-full text-sm">
               <caption className="sr-only">Credit applications in this cycle</caption>
-              <thead className="text-left text-xs text-muted-foreground">
+              <thead className="text-left text-xs text-dim">
                 <tr>
                   <th scope="col" className="py-1 pr-2">
                     Activity
@@ -418,22 +415,17 @@ export function CyclePage() {
                           {ap.activity.title}
                         </Link>
                         {ap.overrideReason && (
-                          <span
-                            className="ml-1 text-[11px] text-muted-foreground"
-                            title={ap.overrideReason}
-                          >
+                          <span className="ml-1 text-[11px] text-dim" title={ap.overrideReason}>
                             (override)
                           </span>
                         )}
                       </td>
-                      <td className="num pr-2 text-xs text-muted-foreground">
-                        {ap.activity.occurredOn}
-                      </td>
+                      <td className="num pr-2 text-xs text-dim">{ap.activity.occurredOn}</td>
                       <td className="pr-2 tabular-nums">
                         {credits(ap.creditsX100)}
                         {ap.suggestedCreditsX100 != null &&
                           ap.suggestedCreditsX100 !== ap.creditsX100 && (
-                            <span className="text-[11px] text-muted-foreground">
+                            <span className="text-[11px] text-dim">
                               {' '}
                               (suggested {credits(ap.suggestedCreditsX100)})
                             </span>
@@ -472,7 +464,6 @@ export function CyclePage() {
                         {ap.status === 'claimed' && (
                           <Button
                             size="sm"
-                            variant="outline"
                             onClick={() =>
                               patch.mutate({
                                 id: ap.id,
@@ -488,7 +479,6 @@ export function CyclePage() {
                           <>
                             <Button
                               size="sm"
-                              variant="outline"
                               onClick={() =>
                                 patch.mutate({
                                   id: ap.id,
@@ -539,7 +529,7 @@ export function CyclePage() {
       </Card>
 
       {cycle.status !== 'open' && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-dim">
           This cycle is {cycle.status}. Its applications and pinned rule version are kept as
           history.
         </p>
@@ -547,7 +537,7 @@ export function CyclePage() {
       {cycle.status === 'open' && (
         <Card>
           <h3 className="mb-1 font-semibold">Renewal</h3>
-          <p className="mb-2 text-xs text-muted-foreground">
+          <p className="mb-2 text-xs text-dim">
             When the issuer confirms renewal, close this cycle. The next one starts {cycle.endsOn}{' '}
             and pins the current rule version.
           </p>
@@ -556,7 +546,6 @@ export function CyclePage() {
               <Input type="date" value={renewedOn} onChange={(e) => setRenewedOn(e.target.value)} />
             </Field>
             <Button
-              variant="outline"
               disabled={!renewedOn || renew.isPending}
               onClick={() => {
                 if (confirm('Close this cycle as renewed and open the next?')) renew.mutate();
@@ -568,7 +557,7 @@ export function CyclePage() {
           <ErrorText error={renew.error} />
         </Card>
       )}
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-dim">
         Fee shown from catalog:{' '}
         {h.certification.requirement?.feeAmountCents
           ? money(
@@ -612,30 +601,30 @@ function ConstraintRow({
           {c.activityType ? ` — ${c.activityType}` : ''}
         </span>
         {c.severity === 'soft' && (
-          <span className="text-xs text-muted-foreground">(suggested, not required)</span>
+          <span className="text-xs text-dim">(suggested, not required)</span>
         )}
         {against && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-dim">
             <span className="num">{against.text}</span> {unit}
             {against.surplus && <span className="num"> · {against.surplus}</span>}
           </span>
         )}
         {c.due && !c.satisfied && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-dim">
             due <span className="num">{c.due}</span>
             {c.overdueDays ? ` (${relativeDays(-c.overdueDays).text})` : ''}
           </span>
         )}
-        {c.note && <span className="text-xs text-muted-foreground">{c.note}</span>}
+        {c.note && <span className="text-xs text-dim">{c.note}</span>}
         {c.scope && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-dim">
             {c.scope}
             {c.period ? ` · ${periodRange(c.period)}` : ''}
           </span>
         )}
       </div>
       {c.of && (
-        <ul className="ml-4 mt-1 text-xs text-muted-foreground">
+        <ul className="ml-4 mt-1 text-xs text-dim">
           {c.of.map((x, i) => (
             <li key={i}>
               {x.year ? `year ${x.year}` : (LABEL[x.type] ?? x.type)}:{' '}
@@ -655,7 +644,7 @@ function ConstraintRow({
               onChange={(e) => setPayOn(e.target.value)}
             />
           </Field>
-          <Button size="sm" variant="outline" onClick={onPay}>
+          <Button size="sm" onClick={onPay}>
             Record fee paid{feeCents ? ` (${money(feeCents, feeCurrency)})` : ''}
           </Button>
         </div>
