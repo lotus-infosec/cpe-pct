@@ -125,7 +125,7 @@ export const evidence = new Hono<Vars>()
   })
   /**
    * multipart: file=<binary> [activityId=<existing activity to link>]
-   * Flow (AGENTS §6.3(a)): hash → store (dedup on sha256) → sniff → PDF: inline extract with deadline,
+   * Flow: hash → store (dedup on sha256) → sniff → PDF: inline extract with deadline,
    * over budget → extract_text job; image: manual. Draft activity + link written in one batch.
    */
   .post('/', async (c) => {

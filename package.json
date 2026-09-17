@@ -1,6 +1,6 @@
 {
   "name": "cpe-pct",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "CPE Personal Certification Tracker. Single-owner continuing-education and certification-maintenance tracker; one codebase for Cloudflare Workers and Docker Compose.",
   "license": "MIT",
@@ -77,7 +77,6 @@
     "esbuild@0.28.2": true,
     "esbuild@0.25.12": true,
     "esbuild@0.28.1": true,
-    "esbuild@0.18.20": true,
     "lefthook@2.1.12": true,
     "workerd@1.20260911.1": true
   },
