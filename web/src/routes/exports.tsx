@@ -52,7 +52,7 @@ export function ExportsPage() {
     <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
       <Card>
         <h2 className="mb-1 font-semibold">Build an export</h2>
-        <p className="mb-3 text-xs text-muted-foreground">
+        <p className="mb-3 text-xs text-dim">
           One bundle per cycle: a CSV in the issuer's field order, an evidence manifest, a README,
           and the evidence files. You enter the rows into the portal yourself.
         </p>
@@ -62,7 +62,7 @@ export function ExportsPage() {
               <li key={c.id} className="flex items-center gap-2 py-2 text-sm">
                 <span>
                   <CertLink cycles={[c]}>{h.certification.abbreviation}</CertLink>{' '}
-                  <span className="text-muted-foreground">
+                  <span className="text-dim">
                     cycle {c.sequence} ·{' '}
                     <span className="num">{dateRange(c.startsOn, c.endsOn)}</span>
                   </span>
@@ -70,7 +70,6 @@ export function ExportsPage() {
                 <Badge>{c.status}</Badge>
                 <Button
                   size="sm"
-                  variant="outline"
                   className="ml-auto"
                   onClick={() => create.mutate(c.id)}
                   disabled={create.isPending}
@@ -82,7 +81,7 @@ export function ExportsPage() {
           )}
         </ul>
         <ErrorText error={create.error} />
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="mt-2 text-xs text-dim">
           Builds run on the next tick (15 s on self-hosted, up to a minute on Cloudflare).{' '}
           <button className="underline" onClick={() => tick.mutate()}>
             Run now
@@ -107,7 +106,7 @@ export function ExportsPage() {
                 {e.status}
                 {e.progress ? ` ${e.progress.done}/${e.progress.total}` : ''}
               </Badge>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-dim">
                 {timestamp(e.createdAt)}
                 {e.progress?.bytes ? ` · ${bytes(e.progress.bytes)}` : ''}
               </span>
@@ -121,9 +120,7 @@ export function ExportsPage() {
               </Button>
             </li>
           ))}
-          {list.data?.length === 0 && (
-            <li className="py-2 text-sm text-muted-foreground">No exports yet.</li>
-          )}
+          {list.data?.length === 0 && <li className="py-2 text-sm text-dim">No exports yet.</li>}
         </ul>
       </Card>
     </div>
@@ -169,17 +166,17 @@ export function BackupPage() {
     <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
       <Card>
         <h2 className="mb-1 font-semibold">Backup</h2>
-        <p className="mb-3 text-xs text-muted-foreground">
+        <p className="mb-3 text-xs text-dim">
           One zip: a SQL dump of every table, a manifest with per-table checksums and every evidence
           hash, and the evidence files. Portable between the self-hosted and Cloudflare targets.
         </p>
         <a
-          className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+          className="inline-flex h-9 items-center rounded-md bg-accent px-4 text-sm font-medium text-ground"
           href="/api/backup"
         >
           Download backup
         </a>
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 text-xs text-dim">
           From a terminal: <code>npm run backup</code>, <code>npm run restore -- file.zip</code>,{' '}
           <code>npm run verify-restore -- file.zip</code> with <code>CPE_URL</code> and{' '}
           <code>CPE_PASSWORD</code>.
@@ -187,7 +184,7 @@ export function BackupPage() {
       </Card>
       <Card>
         <h2 className="mb-1 font-semibold">Restore / verify</h2>
-        <p className="mb-3 text-xs text-muted-foreground">
+        <p className="mb-3 text-xs text-dim">
           Restore replaces everything on this instance, including the owner password, with the
           backup's contents. A fresh instance accepts a restore before setup. A non-empty instance
           requires the wipe checkbox.
@@ -202,15 +199,11 @@ export function BackupPage() {
           Wipe this instance first (required when not empty)
         </label>
         <div className="mt-3 flex gap-2">
-          <Button
-            variant="outline"
-            disabled={!file || verify.isPending}
-            onClick={() => verify.mutate()}
-          >
+          <Button disabled={!file || verify.isPending} onClick={() => verify.mutate()}>
             Verify against this backup
           </Button>
           <Button
-            variant="destructive"
+            variant="danger"
             disabled={!file || restore.isPending}
             onClick={() => {
               if (confirm('Replace this instance with the backup?')) restore.mutate();
@@ -226,7 +219,7 @@ export function BackupPage() {
               ? 'Verified: zero differences.'
               : `${verify.data.diffs.length} difference(s):`}
             {!verify.data.ok && (
-              <pre className="mt-1 max-h-60 overflow-auto rounded bg-muted p-2 text-[11px]">
+              <pre className="mt-1 max-h-60 overflow-auto rounded bg-panel-strong p-2 text-[11px]">
                 {JSON.stringify(verify.data.diffs, null, 2)}
               </pre>
             )}

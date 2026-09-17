@@ -24,7 +24,6 @@ import { backupRoute } from './routes/backup';
 import { catalogUpdates } from './routes/catalog-updates';
 
 export type { AppContext } from './context';
-export type App = ReturnType<typeof createApp>;
 
 const PUBLIC = new Set(['GET /api/health', 'GET /api/setup', 'POST /api/setup', 'POST /api/login']);
 

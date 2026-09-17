@@ -105,9 +105,6 @@ export async function ruleSetsFor(db: Db, ids: Iterable<string>): Promise<Map<st
   }
   return out;
 }
-export function invalidateRuleSetCache() {
-  cache.clear();
-}
 
 export async function latestRuleVersionId(db: Db, bodyId: string): Promise<string | null> {
   const rv = await db

@@ -140,7 +140,7 @@ export function Certifications() {
         <div className="space-y-4">
           <Card>
             <h2 className="mb-3 font-semibold">Memberships</h2>
-            <p className="mb-2 text-xs text-muted-foreground">
+            <p className="mb-2 text-xs text-dim">
               Needed where the maintenance fee is per membership rather than per certification (e.g.
               the ISC2 AMF).
             </p>
@@ -150,7 +150,7 @@ export function Certifications() {
                   <span className="font-medium">
                     {bodies.find((b) => b.id === m.bodyId)?.name ?? m.bodyId}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-dim">
                     {m.memberNumber ? `#${m.memberNumber}` : ''}
                     {m.since ? ` since ${m.since}` : ''}
                   </span>
@@ -223,7 +223,7 @@ export function Certifications() {
               </Select>
             </Field>
             {selected && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-dim">
                 {selected.requirement
                   ? `${credits(selected.requirement.totalCreditsX100)} ${selected.creditUnitLabel} per ${selected.requirement.cycleMonths}-month cycle` +
                     (selected.requirement.annualMinX100
@@ -255,14 +255,9 @@ export function Certifications() {
               Add
             </Button>
           </form>
-          <div className="mt-4 border-t pt-3 text-xs text-muted-foreground">
+          <div className="mt-4 border-t pt-3 text-xs text-dim">
             <p>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => check.mutate()}
-                disabled={check.isPending}
-              >
+              <Button size="sm" onClick={() => check.mutate()} disabled={check.isPending}>
                 Check for catalog updates
               </Button>{' '}
               fetches one file, <code>catalog/lock.json</code>, from this project's GitHub
@@ -277,7 +272,7 @@ export function Certifications() {
             )}
             <ErrorText error={check.error} />
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">
+          <p className="mt-4 text-xs text-dim">
             Catalog:{' '}
             {bodies
               .map(

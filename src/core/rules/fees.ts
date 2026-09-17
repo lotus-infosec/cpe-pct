@@ -1,6 +1,6 @@
 // Fee schedule: which fee periods a cycle implies, and whether each is covered. Pure.
 // Scope 'certification' → periods keyed to the cycle; 'membership' → periods keyed to the body membership.
-// Both step `feePeriodMonths` from the cycle start (AGENTS §8 fee_paid).
+// Both step `feePeriodMonths` from the cycle start.
 import type {
   CertRequirement,
   Cycle,
@@ -46,7 +46,7 @@ export function feeSchedule(
   const membership = ctx.memberships.find((m) => m.bodyId === ctx.held.bodyId);
   const targetId = scope === 'membership' ? (membership?.id ?? null) : cycle.id;
   const scopeLabel = scope === 'membership' ? `membership:${ctx.held.bodyId}` : `cycle:${cycle.id}`;
-  const coveredBy = coveringCert(cycle, ctx, req);
+  const coveredBy = coveringCert(ctx, req);
   const paid = ctx.payments.filter(
     (p) =>
       p.targetType === targetType &&
@@ -80,7 +80,7 @@ export function feeSchedule(
  * fee_params.covered_by_higher_cert is covered when an active held cert with an open cycle
  * has an earning_renews relation onto it (i.e. it is a higher cert in the same body).
  */
-export function coveringCert(cycle: Cycle, ctx: FeeContext, req: CertRequirement): string | null {
+export function coveringCert(ctx: FeeContext, req: CertRequirement): string | null {
   if (!req.feeParams?.['covered_by_higher_cert']) return null;
   for (const rel of ctx.rules.relations) {
     if (rel.relation !== 'earning_renews' || rel.toCertId !== ctx.held.certificationId) continue;

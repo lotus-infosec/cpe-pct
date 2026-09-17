@@ -16,10 +16,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
     retry: false,
     enabled: setup.data?.setUp === true,
   });
-  if (setup.isPending) return <p className="p-6 text-sm text-muted-foreground">Loading…</p>;
+  if (setup.isPending) return <p className="p-6 text-sm text-dim">Loading…</p>;
   if (setup.isError) return <p className="p-6 text-sm text-bad">Cannot reach the API.</p>;
   if (!setup.data.setUp) return <PasswordForm mode="setup" />;
-  if (me.isPending) return <p className="p-6 text-sm text-muted-foreground">Loading…</p>;
+  if (me.isPending) return <p className="p-6 text-sm text-dim">Loading…</p>;
   if (me.isError) return <PasswordForm mode="login" />;
   return <>{children}</>;
 }
@@ -51,7 +51,7 @@ function PasswordForm({ mode }: { mode: 'setup' | 'login' }) {
         <h1 className="mb-1 text-lg font-semibold">
           {mode === 'setup' ? 'Set up CPE PCT' : 'Log in'}
         </h1>
-        <p className="mb-4 text-sm text-muted-foreground">
+        <p className="mb-4 text-sm text-dim">
           {mode === 'setup'
             ? 'Single owner. Choose a password of at least 12 characters. Nothing leaves this instance.'
             : 'Enter the owner password.'}
