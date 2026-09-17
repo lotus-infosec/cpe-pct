@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { useDocumentTitle } from '@/lib/title';
 import { Button, Card, ErrorText, Field, Input } from '@/components/ui';
 
 /** Gate: /setup when no owner exists, /login when unauthenticated, children otherwise. */
@@ -27,6 +28,7 @@ function PasswordForm({ mode }: { mode: 'setup' | 'login' }) {
   const qc = useQueryClient();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  useDocumentTitle(mode === 'setup' ? 'Set up' : 'Log in');
   const m = useMutation({
     mutationFn: () => api(`/api/${mode}`, { method: 'POST', body: { password } }),
     onSuccess: () => qc.invalidateQueries(),
@@ -37,7 +39,14 @@ function PasswordForm({ mode }: { mode: 'setup' | 'login' }) {
     m.mutate();
   };
   return (
-    <div className="mx-auto mt-16 max-w-sm px-4">
+    <div className="mx-auto mt-12 max-w-sm px-4">
+      <img
+        src="/brand-lockup.png"
+        alt="CPE PCT"
+        width={208}
+        height={120}
+        className="mx-auto mb-6 h-auto w-52"
+      />
       <Card>
         <h1 className="mb-1 text-lg font-semibold">
           {mode === 'setup' ? 'Set up CPE PCT' : 'Log in'}

@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { routeTitle, useDocumentTitle } from '@/lib/title';
 import { cn } from '@/lib/utils';
 
 type Icon = ComponentType<{ className?: string; strokeWidth?: number; 'aria-hidden'?: boolean }>;
@@ -62,7 +63,11 @@ function useUnread() {
 
 function Wordmark() {
   return (
-    <NavLink to="/" className="rounded-control px-1 text-lg font-semibold tracking-tight text-fg">
+    <NavLink
+      to="/"
+      className="inline-flex items-center gap-2 rounded-control px-1 text-lg font-semibold tracking-tight text-fg"
+    >
+      <img src="/favicon.svg" alt="" width={26} height={26} className="size-6.5 shrink-0" />
       CPE PCT
     </NavLink>
   );
@@ -196,6 +201,7 @@ export function Layout() {
   const location = useLocation();
   // Close the mobile menu after navigating, so the new page is not hidden behind it.
   useEffect(() => setMenuOpen(false), [location.pathname]);
+  useDocumentTitle(routeTitle(location.pathname));
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
