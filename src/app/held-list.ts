@@ -7,6 +7,7 @@ import * as s from '../db/schema';
 import type { Db } from '../db/client';
 import { standing } from '../core/rules';
 import { daysBetween } from '../core/cycles/dates';
+import { lastDay } from '../core/rules/standing';
 import { standingContext } from './rulesets';
 import { includesCI, listQuery, pageInMemory, type Dir } from './query';
 
@@ -51,6 +52,10 @@ export interface HeldSummary {
   standing: StandingSummary | null;
   /** Derived for filtering and sorting; also sent so the interface never re-derives them. */
   derived: {
+    /**
+     * Signed days to the cycle's last day (`endsOn` is exclusive): 0 on that day, -1 the day after.
+     * The interface prints this number, so sort order, filter and the words on the row agree.
+     */
     daysToExpiry: number | null;
     expiry: ExpiryBucket;
     standing: StandingBucket | null;
@@ -112,8 +117,9 @@ export function standingBucket(
     return 'lapsed';
   if (!open || !st) return 'untracked';
   // A cycle past its end date is overdue for renewal even when every requirement is met: the issuer
-  // has not been told, or the renewal was not recorded here.
-  if (!st.compliant || st.daysRemaining < 0) return 'overdue';
+  // has not been told, or the renewal was not recorded here. `daysRemaining` counts to the exclusive
+  // end, so 0 is the first day after the cycle.
+  if (!st.compliant || st.daysRemaining <= 0) return 'overdue';
   const earned = st.totals.accepted + st.totals.submitted + st.totals.claimed;
   const soon = (due: string | null) =>
     due != null && due >= asOf && daysBetween(asOf, due) <= AT_RISK_DAYS;
@@ -159,7 +165,7 @@ export async function heldSummaries(
         };
       }
     }
-    const daysToExpiry = open ? daysBetween(asOf, open.endsOn) : null;
+    const daysToExpiry = open ? daysBetween(asOf, lastDay(open.endsOn)) : null;
     const earned = st ? st.totals.accepted + st.totals.submitted + st.totals.claimed : null;
     out.push({
       held: r.held,

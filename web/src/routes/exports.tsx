@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { bytes, dateRange, timestamp } from '@/lib/format';
 import { fetchAll } from '@/lib/list';
 import type { Held } from '@/lib/types';
-import { Badge, Button, Card, ErrorText, Input } from '@/components/ui';
+import { Badge, Button, Card, CertLink, ErrorText, Input } from '@/components/ui';
 
 interface ExportRow {
   id: string;
@@ -44,7 +45,7 @@ export function ExportsPage() {
     const h = held.data?.find((x) => x.cycles.some((c) => c.id === cycleId));
     const c = h?.cycles.find((x) => x.id === cycleId);
     return h && c
-      ? `${h.certification.abbreviation} cycle ${c.sequence} (${c.startsOn} → ${c.endsOn})`
+      ? `${h.certification.abbreviation} cycle ${c.sequence} (${dateRange(c.startsOn, c.endsOn)})`
       : cycleId;
   };
   return (
@@ -60,9 +61,10 @@ export function ExportsPage() {
             h.cycles.map((c) => (
               <li key={c.id} className="flex items-center gap-2 py-2 text-sm">
                 <span>
-                  {h.certification.abbreviation}{' '}
+                  <CertLink cycles={[c]}>{h.certification.abbreviation}</CertLink>{' '}
                   <span className="text-muted-foreground">
-                    cycle {c.sequence} · {c.startsOn} → {c.endsOn}
+                    cycle {c.sequence} ·{' '}
+                    <span className="num">{dateRange(c.startsOn, c.endsOn)}</span>
                   </span>
                 </span>
                 <Badge>{c.status}</Badge>
@@ -93,17 +95,21 @@ export function ExportsPage() {
           {list.data?.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
               <span>
-                {e.cycleId
-                  ? label(e.cycleId)
-                  : `Selection of ${e.activityCount ?? 0} ${e.activityCount === 1 ? 'activity' : 'activities'}`}
+                {e.cycleId ? (
+                  <CertLink cycles={[{ id: e.cycleId, sequence: 0, status: 'open' }]}>
+                    {label(e.cycleId)}
+                  </CertLink>
+                ) : (
+                  `Selection of ${e.activityCount ?? 0} ${e.activityCount === 1 ? 'activity' : 'activities'}`
+                )}
               </span>
               <Badge tone={e.status === 'ready' ? 'ok' : e.status === 'failed' ? 'bad' : 'warn'}>
                 {e.status}
                 {e.progress ? ` ${e.progress.done}/${e.progress.total}` : ''}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                {e.createdAt.slice(0, 16).replace('T', ' ')}
-                {e.progress?.bytes ? ` · ${(e.progress.bytes / 1024).toFixed(0)} KB` : ''}
+                {timestamp(e.createdAt)}
+                {e.progress?.bytes ? ` · ${bytes(e.progress.bytes)}` : ''}
               </span>
               {e.status === 'ready' && (
                 <a className="ml-auto text-xs underline" href={`/api/exports/${e.id}/download`}>

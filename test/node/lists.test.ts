@@ -278,12 +278,16 @@ describe('held certifications and dashboard', () => {
     }
   });
   it('filters days to expiry cumulatively', async () => {
-    // Security+ earned 2023-10-01 on a 36-month cycle ends 2026-10-01: 20 days after the clock.
+    // Security+ earned 2023-10-01 on a 36-month cycle ends 2026-10-01 (exclusive), last day 2026-09-30.
     for (const expiry of ['30', '90', '365'])
       expect(
         (await get(`/api/held?expiry=${expiry}`)).json.rows.map((x: any) => x.certificationId),
       ).toContain('comptia/security-plus');
     expect((await get('/api/held?expiry=overdue')).json.total).toBe(0);
+    const secplus = (await get('/api/held')).json.rows.find(
+      (x: any) => x.certificationId === 'comptia/security-plus',
+    );
+    expect(secplus.derived.daysToExpiry).toBe(19);
   });
   it('sorts by expiry and severity with every row exactly once', async () => {
     const r = await get('/api/held?sort=expiry&dir=asc');
@@ -392,6 +396,14 @@ describe('bucket definitions', () => {
         asOf,
       ),
     ).toBe('overdue');
+    // The first day after the last day (daysRemaining 0 against the exclusive end) is already overdue.
+    const met = { accepted: 100, submitted: 0, claimed: 0, planned: 0 };
+    expect(standingBucket('active', [open], st({ daysRemaining: 0, totals: met }), asOf)).toBe(
+      'overdue',
+    );
+    expect(standingBucket('active', [open], st({ daysRemaining: 1, totals: met }), asOf)).not.toBe(
+      'overdue',
+    );
     expect(standingBucket('lapsed', [open], st({}), asOf)).toBe('lapsed');
     expect(standingBucket('active', [{ ...open, status: 'lapsed' as const }], null, asOf)).toBe(
       'lapsed',

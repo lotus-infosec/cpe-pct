@@ -6,7 +6,7 @@ import { Link } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, Trash2, X } from 'lucide-react';
 import { api } from '@/lib/api';
-import { fmtCount } from '@/lib/list';
+import { count } from '@/lib/format';
 import { Button, Dialog, ErrorText, Input } from '@/components/ui';
 
 export const MAX_HAND_SELECTED = 500;
@@ -168,19 +168,19 @@ export function SelectionBar({
       <p aria-live="polite" className="text-sm text-fg">
         {sel.mode === 'matching' ? (
           <>
-            All <span className="num font-semibold">{fmtCount(sel.size)}</span> activities matching
-            the current filter
+            All <span className="num font-semibold">{count(sel.size)}</span> activities matching the
+            current filter
           </>
         ) : (
           <>
-            <span className="num font-semibold">{fmtCount(sel.size)}</span> selected
+            <span className="num font-semibold">{count(sel.size)}</span> selected
             {sel.size > pageIds.filter((id) => sel.has(id)).length && ' across pages'}
           </>
         )}
       </p>
       {sel.mode === 'ids' && narrowed && allOnPage && total > pageIds.length && (
         <Button size="sm" variant="ghost" onClick={sel.selectMatching}>
-          Select all {fmtCount(total)} matching
+          Select all {count(total)} matching
         </Button>
       )}
       {sel.capped && (
@@ -223,11 +223,11 @@ interface ExportStatus {
   progress: { done: number; total: number } | null;
 }
 
-const plural = (n: number, one: string, many: string) => `${fmtCount(n)} ${n === 1 ? one : many}`;
+const plural = (n: number, one: string, many: string) => `${count(n)} ${n === 1 ? one : many}`;
 /** A count in the data face beside words in the text face. */
 const Count = ({ n, one, many }: { n: number; one: string; many: string }) => (
   <>
-    <span className="num">{fmtCount(n)}</span> {n === 1 ? one : many}
+    <span className="num">{count(n)}</span> {n === 1 ? one : many}
   </>
 );
 
@@ -382,8 +382,8 @@ export function BulkDeleteDialog({
               . Evidence files are kept
               {p.evidenceOrphaned > 0 && (
                 <>
-                  ; <span className="num">{fmtCount(p.evidenceOrphaned)}</span> will show as
-                  unlinked on the Evidence page
+                  ; <span className="num">{count(p.evidenceOrphaned)}</span> will show as unlinked
+                  on the Evidence page
                 </>
               )}
               .
