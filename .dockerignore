@@ -16,3 +16,5 @@ CPETracker
 *.md
 !README.md
 !NOTICE.md
+docs
+test

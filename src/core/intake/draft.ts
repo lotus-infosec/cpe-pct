@@ -1,6 +1,6 @@
 // intake.draft: extracted text → draft activity fields. Heuristic and conservative: a field is filled
 // only when one clear candidate exists; otherwise it stays undefined and the user types it.
-// This is the seam for a model-backed Drafter later (AGENTS §12); the signature does not change.
+// This is the seam for a model-backed Drafter later; the signature does not change.
 import type { ActivityType } from '../domain/activity-types';
 
 export interface Draft {
