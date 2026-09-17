@@ -2,7 +2,7 @@
 # Multi-stage. Runtime image carries only the bundled server, the built SPA, the migrations
 # folder, and production node_modules (native libSQL binding). Runs as the non-root `node` user.
 # node:22-alpine, manifest-list digest recorded 2026-09-11 (Dependabot bumps it).
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS build
+FROM node:26-alpine@sha256:2c45bdcbf63561a54da9549612084b43ca309854a4110c87857d609ddeb61c9e AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 # `prepare` runs during npm ci and lives in a file, so it has to be present before the install.
@@ -11,7 +11,7 @@ RUN npm ci
 COPY . .
 RUN npm run build && rm -rf node_modules && npm ci --omit=dev
 
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runtime
+FROM node:26-alpine@sha256:2c45bdcbf63561a54da9549612084b43ca309854a4110c87857d609ddeb61c9e AS runtime
 ENV NODE_ENV=production DATA_DIR=/data PORT=8787 WEB_DIST=/app/web/dist MIGRATIONS_DIR=/app/src/db/migrations
 WORKDIR /app
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
