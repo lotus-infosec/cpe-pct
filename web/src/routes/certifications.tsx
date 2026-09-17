@@ -1,8 +1,18 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import { api, fmtCredits, fmtMoney } from '@/lib/api';
-import { fmtCount, useList, useListQuery } from '@/lib/list';
+import { api } from '@/lib/api';
+import {
+  creditsAgainst,
+  credits,
+  DAY_TONE_CLASS,
+  lastDay,
+  money,
+  relativeDays,
+  timestamp,
+  standingLabel,
+} from '@/lib/format';
+import { useList, useListQuery } from '@/lib/list';
 import { EXPIRY, PROGRESS, STANDING, options } from '@/lib/labels';
 import type { Body, Held, Membership, StandingBucket } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -10,11 +20,14 @@ import {
   Badge,
   Button,
   Card,
+  CertLink,
   ErrorText,
   Field,
   FilterChips,
   FilterSelect,
   Input,
+  LIFT,
+  LINKED,
   ListEmpty,
   PageHeader,
   Pagination,
@@ -212,12 +225,12 @@ export function Certifications() {
             {selected && (
               <p className="text-xs text-muted-foreground">
                 {selected.requirement
-                  ? `${selected.requirement.totalCreditsX100 / 100} ${selected.creditUnitLabel} per ${selected.requirement.cycleMonths}-month cycle` +
+                  ? `${credits(selected.requirement.totalCreditsX100)} ${selected.creditUnitLabel} per ${selected.requirement.cycleMonths}-month cycle` +
                     (selected.requirement.annualMinX100
-                      ? `; ${selected.requirement.annualMinX100 / 100}/yr ${selected.requirement.annualMinSeverity === 'soft' ? 'suggested' : 'required'}`
+                      ? `; ${credits(selected.requirement.annualMinX100)}/yr ${selected.requirement.annualMinSeverity === 'soft' ? 'suggested' : 'required'}`
                       : '') +
                     (selected.requirement.feeAmountCents
-                      ? `; fee ${fmtMoney(selected.requirement.feeAmountCents, selected.requirement.feeCurrency ?? 'USD')} per ${selected.requirement.feePeriodMonths} months`
+                      ? `; fee ${money(selected.requirement.feeAmountCents, selected.requirement.feeCurrency ?? 'USD')} per ${selected.requirement.feePeriodMonths} months`
                       : '')
                   : 'No continuing-education requirement of its own.'}
               </p>
@@ -258,7 +271,7 @@ export function Certifications() {
             {check.data && (
               <p className="mt-1">
                 {check.data.updates.length === 0
-                  ? `Up to date with ${check.data.url} as of ${check.data.checkedAt.slice(0, 16).replace('T', ' ')}.`
+                  ? `Up to date with ${check.data.url} as of ${timestamp(check.data.checkedAt)}.`
                   : `Newer rule versions available: ${check.data.updates.map((u) => `${u.body} v${u.remote} (verified ${u.verified_on})`).join(', ')}. Update by redeploying or pulling a new image.`}
               </p>
             )}
@@ -411,11 +424,18 @@ function HeldList({ bodies, onRemove }: { bodies: Body[]; onRemove: (h: Held) =>
             <TBody>
               {data.rows.map((h) => {
                 const open = h.cycles.find((c) => c.status === 'open');
-                const bucket = h.derived.standing ?? 'untracked';
+                const standing = standingLabel(h.derived.standing);
+                const days =
+                  h.derived.daysToExpiry != null ? relativeDays(h.derived.daysToExpiry) : null;
+                const against = h.derived.requiredX100
+                  ? creditsAgainst(h.derived.earnedX100 ?? 0, h.derived.requiredX100)
+                  : null;
                 return (
-                  <Tr key={h.id}>
+                  <Tr key={h.id} className={cn(h.cycles.length > 0 && LINKED)}>
                     <Td>
-                      <span className="font-medium">{h.certification.abbreviation}</span>
+                      <CertLink cycles={h.cycles} stretch className="font-medium">
+                        {h.certification.abbreviation}
+                      </CertLink>
                       <span
                         className="block max-w-72 truncate text-xs text-dim"
                         title={h.certification.name}
@@ -426,27 +446,31 @@ function HeldList({ bodies, onRemove }: { bodies: Body[]; onRemove: (h: Held) =>
                     </Td>
                     <Td className="text-dim">{h.body.name}</Td>
                     <Td>
-                      <Badge tone={STANDING[bucket].tone}>{STANDING[bucket].label}</Badge>
+                      <Badge tone={standing.tone}>{standing.label}</Badge>
                     </Td>
                     <Td className="num whitespace-nowrap">
                       {open ? (
                         <>
-                          {open.endsOn}
-                          <span className="block text-xs text-dim">
-                            {h.derived.daysToExpiry != null && h.derived.daysToExpiry >= 0
-                              ? `${fmtCount(h.derived.daysToExpiry)} days`
-                              : `${fmtCount(Math.abs(h.derived.daysToExpiry ?? 0))} days ago`}
-                          </span>
+                          {lastDay(open.endsOn)}
+                          {days && (
+                            <span className={cn('block text-xs', DAY_TONE_CLASS[days.tone])}>
+                              {days.text}
+                            </span>
+                          )}
                         </>
                       ) : (
                         <span className="text-dim">none</span>
                       )}
                     </Td>
                     <Td numeric className="whitespace-nowrap">
-                      {h.derived.requiredX100 ? (
+                      {against ? (
                         <>
-                          {fmtCredits(h.derived.earnedX100 ?? 0)} /{' '}
-                          {fmtCredits(h.derived.requiredX100)}
+                          {against.text}
+                          {against.surplus && (
+                            <span className="block text-xs text-dim">
+                              +{credits(against.surplusX100)} beyond
+                            </span>
+                          )}
                         </>
                       ) : (
                         <span className="text-dim">n/a</span>
@@ -456,7 +480,7 @@ function HeldList({ bodies, onRemove }: { bodies: Body[]; onRemove: (h: Held) =>
                       <span className="flex flex-wrap gap-x-2">
                         {open && (
                           <Link
-                            className="text-accent underline-offset-2 hover:underline"
+                            className={cn(LIFT, 'text-accent underline-offset-2 hover:underline')}
                             to={`/cycles/${open.id}`}
                           >
                             cycle {open.sequence}
@@ -467,7 +491,7 @@ function HeldList({ bodies, onRemove }: { bodies: Body[]; onRemove: (h: Held) =>
                           .map((c) => (
                             <Link
                               key={c.id}
-                              className="text-dim underline-offset-2 hover:underline"
+                              className={cn(LIFT, 'text-dim underline-offset-2 hover:underline')}
                               to={`/cycles/${c.id}`}
                             >
                               cycle {c.sequence} ({c.status})
@@ -476,7 +500,12 @@ function HeldList({ bodies, onRemove }: { bodies: Body[]; onRemove: (h: Held) =>
                       </span>
                     </Td>
                     <Td className="text-right">
-                      <Button size="sm" variant="ghost" onClick={() => onRemove(h)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={LIFT}
+                        onClick={() => onRemove(h)}
+                      >
                         Remove
                         <span className="sr-only"> {h.certification.abbreviation}</span>
                       </Button>

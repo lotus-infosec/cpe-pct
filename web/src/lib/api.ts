@@ -23,7 +23,3 @@ export async function api<T>(
   if (!res.ok) throw new ApiError(res.status, json);
   return json as T;
 }
-
-export const fmtCredits = (x100: number) => (x100 / 100).toFixed(2).replace(/\.?0+$/, '');
-export const fmtMoney = (cents: number, currency = 'USD') =>
-  new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(cents / 100);

@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": [],
+    "lib": ["ES2023", "DOM"],
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": { "@/*": ["../../web/src/*"] }
+  },
+  "include": ["./**/*.ts", "../../web/src/lib/format.ts"]
+}

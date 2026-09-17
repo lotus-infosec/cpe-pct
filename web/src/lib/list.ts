@@ -165,8 +165,6 @@ export async function fetchAll<T>(path: string): Promise<T[]> {
   return rows;
 }
 
-export const fmtCount = (n: number) => new Intl.NumberFormat('en-US').format(n);
-
 /**
  * Fetches one page for a list. The previous page stays on screen while the next loads, so paging
  * never collapses the table, and a page number past the end (after a delete, or from an old link)

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { timestamp } from '@/lib/format';
 import { Badge, Button, Card, ErrorText, Field, Input } from '@/components/ui';
 
 interface Notification {
@@ -99,9 +100,7 @@ export function NotificationsPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={tone(n.severity)}>{n.severity}</Badge>
                 <span className="font-medium">{n.title}</span>
-                <span className="text-xs text-muted-foreground">
-                  {n.createdAt.slice(0, 16).replace('T', ' ')}
-                </span>
+                <span className="text-xs text-muted-foreground">{timestamp(n.createdAt)}</span>
                 <Badge>{n.status}</Badge>
                 {n.status !== 'read' && (
                   <Button

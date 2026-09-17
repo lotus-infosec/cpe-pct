@@ -9,7 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "typecheck": "wrangler types && tsc -p tsconfig.json && tsc -p tsconfig.node.json && tsc -p web/tsconfig.json && tsc -p test/core/tsconfig.json && tsc -p test/node/tsconfig.json && tsc -p test/workers/tsconfig.json",
+    "typecheck": "wrangler types && tsc -p tsconfig.json && tsc -p tsconfig.node.json && tsc -p web/tsconfig.json && tsc -p test/core/tsconfig.json && tsc -p test/node/tsconfig.json && tsc -p test/web/tsconfig.json && tsc -p test/workers/tsconfig.json",
     "prepare": "node scripts/prepare.mjs",
     "dev:node": "tsx watch src/entry.node.ts",
     "dev:web": "vite --config web/vite.config.ts",

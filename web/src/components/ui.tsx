@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 export { Table, THead, TBody, Tr, Th, SortableTh, Td } from './ui/table';
 export { Dialog } from './ui/dialog';
 export { Progress } from './ui/progress';
+export { CertLink, certCycleId, LIFT, LINKED } from './ui/cert-link';
 export { EmptyState, Skeleton } from './ui/feedback';
 export { PageHeader, Toolbar } from './ui/toolbar';
 export {

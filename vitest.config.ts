@@ -35,6 +35,10 @@ export default defineConfig(async () => {
           test: { name: 'node', environment: 'node', include: ['test/node/**/*.test.ts'] },
         },
         {
+          // Pure display helpers from the web app. No DOM: formatting must not depend on one.
+          test: { name: 'web', environment: 'node', include: ['test/web/**/*.test.ts'] },
+        },
+        {
           plugins: [
             rawBytes,
             cloudflareTest({

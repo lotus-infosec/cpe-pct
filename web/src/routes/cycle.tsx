@@ -1,7 +1,17 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
-import { api, fmtCredits, fmtMoney } from '@/lib/api';
+import { api } from '@/lib/api';
+import {
+  credits,
+  creditsAgainst,
+  DAY_TONE_CLASS,
+  dateRange,
+  daysToCycleEnd,
+  money,
+  relativeDays,
+  standingLabel,
+} from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { fetchAll, useList, useListQuery } from '@/lib/list';
 import { APPLICATION_STATUS, options } from '@/lib/labels';
@@ -179,6 +189,9 @@ export function CyclePage() {
   if (st.isError || !h || !cycle) return <p className="text-sm text-bad">Cycle not found.</p>;
   const s = st.data;
   const earned = s.totals.accepted + s.totals.submitted + s.totals.claimed;
+  const against = creditsAgainst(earned, s.requiredX100);
+  const days = relativeDays(daysToCycleEnd(s.asOf, cycle.endsOn));
+  const standing = standingLabel(s.compliant);
 
   return (
     <div className="space-y-4">
@@ -187,21 +200,27 @@ export function CyclePage() {
           <h2 className="font-semibold">
             {h.certification.abbreviation} — cycle {cycle.sequence}
           </h2>
-          <span className="text-sm text-muted-foreground">
-            {cycle.startsOn} → {cycle.endsOn} · rules {cycle.ruleVersionId}
+          <span className="num text-sm text-muted-foreground">
+            {dateRange(cycle.startsOn, cycle.endsOn)}
           </span>
-          <Badge tone={s.compliant ? 'ok' : 'bad'}>
-            {s.compliant ? 'in good standing' : 'action needed'}
-          </Badge>
+          <span className="text-sm text-muted-foreground">· rules {cycle.ruleVersionId}</span>
+          <Badge tone={standing.tone}>{standing.label}</Badge>
           <span className="ml-auto text-xs text-muted-foreground">
-            as of {s.asOf} · {s.daysRemaining} days remaining
+            as of <span className="num">{s.asOf}</span> ·{' '}
+            {cycle.status === 'open' ? (
+              <span className={DAY_TONE_CLASS[days.tone]}>{days.text}</span>
+            ) : (
+              cycle.status
+            )}
           </span>
         </div>
         <p className="mt-2 text-sm">
-          {fmtCredits(earned)} of {fmtCredits(s.requiredX100)} {h.certification.creditUnitLabel} —
-          accepted {fmtCredits(s.totals.accepted)}, submitted {fmtCredits(s.totals.submitted)},
-          claimed {fmtCredits(s.totals.claimed)}
+          <span className="num">{against.text}</span> {h.certification.creditUnitLabel} — accepted{' '}
+          <span className="num">{credits(s.totals.accepted)}</span>, submitted{' '}
+          <span className="num">{credits(s.totals.submitted)}</span>, claimed{' '}
+          <span className="num">{credits(s.totals.claimed)}</span>
         </p>
+        {against.surplus && <p className="num mt-0.5 text-xs text-dim">{against.surplus}</p>}
       </Card>
 
       <Card>
@@ -250,12 +269,10 @@ export function CyclePage() {
             <tbody>
               {fees.data.map((p) => (
                 <tr key={p.periodStart} className="border-t">
-                  <td className="py-1 pr-2">
-                    {p.periodStart} → {p.periodEnd}
-                  </td>
+                  <td className="num py-1 pr-2">{dateRange(p.periodStart, p.periodEnd)}</td>
                   <td className="pr-2">{p.dueOn}</td>
                   <td className="pr-2">
-                    {p.amountCents != null ? fmtMoney(p.amountCents, p.currency ?? 'USD') : '—'}
+                    {p.amountCents != null ? money(p.amountCents, p.currency ?? 'USD') : '—'}
                   </td>
                   <td className="pr-2">
                     <Badge
@@ -413,12 +430,12 @@ export function CyclePage() {
                         {ap.activity.occurredOn}
                       </td>
                       <td className="pr-2 tabular-nums">
-                        {fmtCredits(ap.creditsX100)}
+                        {credits(ap.creditsX100)}
                         {ap.suggestedCreditsX100 != null &&
                           ap.suggestedCreditsX100 !== ap.creditsX100 && (
                             <span className="text-[11px] text-muted-foreground">
                               {' '}
-                              (suggested {fmtCredits(ap.suggestedCreditsX100)})
+                              (suggested {credits(ap.suggestedCreditsX100)})
                             </span>
                           )}
                       </td>
@@ -554,7 +571,7 @@ export function CyclePage() {
       <p className="text-xs text-muted-foreground">
         Fee shown from catalog:{' '}
         {h.certification.requirement?.feeAmountCents
-          ? fmtMoney(
+          ? money(
               h.certification.requirement.feeAmountCents,
               h.certification.requirement.feeCurrency ?? 'USD',
             )
@@ -583,6 +600,7 @@ function ConstraintRow({
   feeCurrency: string;
 }) {
   const tone = c.satisfied ? 'ok' : c.overdue ? (c.severity === 'hard' ? 'bad' : 'warn') : 'muted';
+  const against = constraintAgainst(c);
   return (
     <li className="py-2 text-sm">
       <div className="flex flex-wrap items-center gap-2">
@@ -596,22 +614,23 @@ function ConstraintRow({
         {c.severity === 'soft' && (
           <span className="text-xs text-muted-foreground">(suggested, not required)</span>
         )}
-        {c.required != null && c.actual != null && (
+        {against && (
           <span className="text-xs text-muted-foreground">
-            {fmtCredits(c.actual)} / {fmtCredits(c.required)} {unit}
+            <span className="num">{against.text}</span> {unit}
+            {against.surplus && <span className="num"> · {against.surplus}</span>}
           </span>
         )}
         {c.due && !c.satisfied && (
           <span className="text-xs text-muted-foreground">
-            due {c.due}
-            {c.overdueDays ? ` (${c.overdueDays} days overdue)` : ''}
+            due <span className="num">{c.due}</span>
+            {c.overdueDays ? ` (${relativeDays(-c.overdueDays).text})` : ''}
           </span>
         )}
         {c.note && <span className="text-xs text-muted-foreground">{c.note}</span>}
         {c.scope && (
           <span className="text-xs text-muted-foreground">
             {c.scope}
-            {c.period ? ` · ${c.period.replace('..', ' → ')}` : ''}
+            {c.period ? ` · ${periodRange(c.period)}` : ''}
           </span>
         )}
       </div>
@@ -620,7 +639,7 @@ function ConstraintRow({
           {c.of.map((x, i) => (
             <li key={i}>
               {x.year ? `year ${x.year}` : (LABEL[x.type] ?? x.type)}:{' '}
-              {x.actual != null ? `${fmtCredits(x.actual)} / ${fmtCredits(x.required ?? 0)}` : ''}{' '}
+              {x.actual != null ? constraintAgainst(x)?.text : ''}{' '}
               {x.satisfied ? '✓' : x.due ? `due ${x.due}` : '✗'}
             </li>
           ))}
@@ -637,10 +656,30 @@ function ConstraintRow({
             />
           </Field>
           <Button size="sm" variant="outline" onClick={onPay}>
-            Record fee paid{feeCents ? ` (${fmtMoney(feeCents, feeCurrency)})` : ''}
+            Record fee paid{feeCents ? ` (${money(feeCents, feeCurrency)})` : ''}
           </Button>
         </div>
       )}
     </li>
   );
+}
+
+const CAPS = new Set(['category_max', 'activity_type_max']);
+
+/**
+ * A constraint's earned figure against its threshold, capped for display. For a minimum the excess
+ * is surplus; for a cap it is the part that does not count. Null when the constraint has no numbers
+ * (a cap without a max arrives as null from JSON).
+ */
+function constraintAgainst(c: ConstraintResult) {
+  if (c.required == null || c.actual == null) return null;
+  return CAPS.has(c.type)
+    ? creditsAgainst(c.actual, c.required, 'over the cap, not counted')
+    : creditsAgainst(c.actual, c.required, 'beyond this minimum');
+}
+
+/** Fee periods arrive as `start..endExclusive`. */
+function periodRange(period: string) {
+  const [start = '', end = ''] = period.split('..');
+  return start && end ? dateRange(start, end) : period;
 }

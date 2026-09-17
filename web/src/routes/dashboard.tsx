@@ -1,13 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import { api, fmtCredits } from '@/lib/api';
-import { fmtCount, useList, useListQuery, type Paged } from '@/lib/list';
+import { api } from '@/lib/api';
+import {
+  count,
+  creditsAgainst,
+  credits,
+  DAY_TONE_CLASS,
+  daysToCycleEnd,
+  lastDay,
+  relativeDays,
+  standingLabel,
+} from '@/lib/format';
+import { useList, useListQuery, type Paged } from '@/lib/list';
 import { EXPIRY, PROGRESS, STANDING, options } from '@/lib/labels';
 import type { Body, DashboardItem, StandingBucket } from '@/lib/types';
 import {
   Badge,
   Card,
+  CertLink,
   FilterChips,
+  LINKED,
   FilterSelect,
   ListEmpty,
   PageHeader,
@@ -138,7 +150,7 @@ export function Dashboard() {
                     (data.counts[b] === 0 || STANDING[b].tone === 'muted') && 'text-fg',
                   )}
                 >
-                  {fmtCount(data.counts[b])}
+                  {count(data.counts[b])}
                 </span>
                 {STANDING[b].label}
               </button>
@@ -212,7 +224,7 @@ export function Dashboard() {
       {data && data.rows.length > 0 && (
         <div className={cn('grid gap-3 sm:grid-cols-2', q.isPlaceholderData && 'opacity-60')}>
           {data.rows.map((it) => (
-            <DashboardCard key={it.held.id} it={it} />
+            <DashboardCard key={it.held.id} it={it} asOf={data.asOf} />
           ))}
         </div>
       )}
@@ -229,33 +241,38 @@ export function Dashboard() {
   );
 }
 
-function DashboardCard({ it }: { it: DashboardItem }) {
+function DashboardCard({ it, asOf }: { it: DashboardItem; asOf: string }) {
   const st = it.standing;
   const earned = it.derived.earnedX100 ?? 0;
-  const bucket = it.derived.standing ?? 'untracked';
+  const standing = standingLabel(it.derived.standing);
   const stale =
     it.ruleVersion && Date.now() - new Date(it.ruleVersion.verifiedOn).getTime() > 365 * 86_400_000;
+  const cycles = it.cycle ? [it.cycle] : [];
+  const against = st ? creditsAgainst(earned, st.requiredX100) : null;
+  const days = it.cycle ? relativeDays(daysToCycleEnd(asOf, it.cycle.endsOn)) : null;
   return (
-    <Card>
+    <Card className={cn(it.cycle && LINKED)}>
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 className="font-semibold">
-            {it.certification.abbreviation}{' '}
+            <CertLink cycles={cycles} stretch>
+              {it.certification.abbreviation}
+            </CertLink>{' '}
             <span className="font-normal text-dim">· {it.body.name}</span>
           </h2>
           <p className="text-xs text-dim">{it.certification.name}</p>
         </div>
-        <Badge tone={STANDING[bucket].tone}>{STANDING[bucket].label}</Badge>
+        <Badge tone={standing.tone}>{standing.label}</Badge>
       </div>
-      {it.cycle && st && (
+      {it.cycle && st && against && days && (
         <>
           <div className="mb-1 flex flex-wrap justify-between gap-x-3 text-xs text-dim">
             <span className="num">
-              {fmtCredits(earned)} / {fmtCredits(st.requiredX100)}{' '}
-              <span className="font-sans">{it.certification.creditUnitLabel}</span>
+              {against.text} <span className="font-sans">{it.certification.creditUnitLabel}</span>
             </span>
             <span className="num">
-              {st.daysRemaining} days left · ends {it.cycle.endsOn}
+              <span className={DAY_TONE_CLASS[days.tone]}>{days.text}</span> · ends{' '}
+              {lastDay(it.cycle.endsOn)}
             </span>
           </div>
           <Progress
@@ -265,9 +282,10 @@ function DashboardCard({ it }: { it: DashboardItem }) {
             label={`${it.certification.abbreviation} credits toward the cycle requirement`}
           />
           <p className="num mt-1 text-xs text-dim">
-            accepted {fmtCredits(st.totals.accepted)} · submitted {fmtCredits(st.totals.submitted)}{' '}
-            · claimed {fmtCredits(st.totals.claimed)}
+            accepted {credits(st.totals.accepted)} · submitted {credits(st.totals.submitted)} ·
+            claimed {credits(st.totals.claimed)}
           </p>
+          {against.surplus && <p className="num mt-0.5 text-xs text-dim">{against.surplus}</p>}
           {st.failing.length > 0 && (
             <ul className="mt-2 space-y-0.5 text-xs">
               {st.failing.map((f, i) => (
@@ -289,21 +307,17 @@ function DashboardCard({ it }: { it: DashboardItem }) {
               Behind pace for: {st.projectedAtCycleEnd.map((t) => LABEL[t] ?? t).join(', ')}
             </p>
           )}
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-            <Link
-              className="text-accent underline-offset-2 hover:underline"
-              to={`/cycles/${it.cycle.id}`}
-            >
-              Standing detail
-            </Link>
-            {it.ruleVersion && (
-              <span className="text-dim">
-                rules v{it.ruleVersion.version}, verified{' '}
-                <span className="num">{it.ruleVersion.verifiedOn}</span>
-              </span>
-            )}
-            {stale && <Badge tone="warn">rules verified over a year ago</Badge>}
-          </div>
+          {(it.ruleVersion || stale) && (
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              {it.ruleVersion && (
+                <span className="text-dim">
+                  rules v{it.ruleVersion.version}, verified{' '}
+                  <span className="num">{it.ruleVersion.verifiedOn}</span>
+                </span>
+              )}
+              {stale && <Badge tone="warn">rules verified over a year ago</Badge>}
+            </div>
+          )}
         </>
       )}
       {!it.cycle && (

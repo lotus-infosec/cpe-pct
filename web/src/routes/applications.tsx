@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import { api, fmtCredits } from '@/lib/api';
+import { api } from '@/lib/api';
+import { credits } from '@/lib/format';
 import { fetchAll, useList, useListQuery } from '@/lib/list';
 import { APPLICATION_STATUS, options } from '@/lib/labels';
 import type { ApplicationRow, Body, Held } from '@/lib/types';
@@ -183,7 +184,7 @@ export function ApplicationsPage() {
                     </Td>
                     <Td className="num whitespace-nowrap">{ap.activity.occurredOn}</Td>
                     <Td numeric>
-                      {fmtCredits(ap.creditsX100)}
+                      {credits(ap.creditsX100)}
                       {ap.overrideReason && (
                         <span className="block text-xs text-dim" title={ap.overrideReason}>
                           override

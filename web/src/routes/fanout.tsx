@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
-import { api, fmtCredits } from '@/lib/api';
+import { api } from '@/lib/api';
+import { credits, creditsAgainst, standingLabel } from '@/lib/format';
 import { fetchAll } from '@/lib/list';
 import type { Fanout, Held, Standing } from '@/lib/types';
 import { Badge, Button, Card, ErrorText, Field, Input, Select } from '@/components/ui';
@@ -302,7 +303,7 @@ export function FanoutPage() {
                         ))}
                     </td>
                     <td className="py-2 pr-2 tabular-nums">
-                      {r.suggested == null ? '—' : fmtCredits(r.suggested)}
+                      {r.suggested == null ? '—' : credits(r.suggested)}
                     </td>
                     <td className="py-2 pr-2">
                       <Input
@@ -365,11 +366,17 @@ export function FanoutPage() {
                   cycle
                 </Link>
                 :{' '}
-                <Badge tone={s.compliant ? 'ok' : 'bad'}>
-                  {s.compliant ? 'in good standing' : 'action needed'}
+                <Badge tone={standingLabel(s.compliant).tone}>
+                  {standingLabel(s.compliant).label}
                 </Badge>{' '}
-                {fmtCredits(s.totals.accepted + s.totals.submitted + s.totals.claimed)} /{' '}
-                {fmtCredits(s.requiredX100)}
+                <span className="num">
+                  {
+                    creditsAgainst(
+                      s.totals.accepted + s.totals.submitted + s.totals.claimed,
+                      s.requiredX100,
+                    ).text
+                  }
+                </span>
               </div>
             ))}
           </div>
