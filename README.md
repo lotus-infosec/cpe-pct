@@ -8,7 +8,7 @@ This is a personal project, entirely vibecoded with Claude. It exists because th
 
 > Status: **v1.0.0**. In daily use by the author. Built, deployed and validated on Workers Paid and on Docker.
 
-**Try it first: [pct-demo.sozincomet.xyz](https://pct-demo.sozincomet.xyz/)**. A public demo with no account needed. It is shared with every visitor, capped at 10 certifications and 100 activities, and emptied every 12 hours, so do not enter real data. Uploads, notifications, downloads and restore are turned off there; the [`demo` branch](https://github.com/lotus-infosec/cpe-pct/tree/demo) explains why.
+**Try it first: [pct-demo.sozincomet.xyz](https://pct-demo.sozincomet.xyz/)**. A public demo with no account needed. It is shared with every visitor, capped at 10 certifications and 100 activities, and emptied every 12 hours, so do not enter real data. Uploaded files are never served back, and notifications, downloads and restore are turned off there; the [`demo` branch](https://github.com/lotus-infosec/cpe-pct/tree/demo) explains why.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lotus-infosec/cpe-pct)
 
