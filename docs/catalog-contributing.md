@@ -5,14 +5,15 @@ document, and a released version is never edited.
 
 ## Rules of the road
 
-| Rule                                                                                                                                                                             | Why                                                          |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Primary sources only: the issuer's policy PDF, handbook, or official program page. Blog posts and training vendors may help you find the primary document; they are never cited. | Wrong numbers in a rules engine are worse than missing ones. |
-| Every version has at least one `sources[]` entry with `url`, `title`, `retrieved_on`; PDFs also carry `sha256` of the retrieved file. The schema enforces the first three.       | Anyone can re-verify.                                        |
-| Parameters only. No handbook prose. `body_label` is the issuer's short name for an activity.                                                                                     | Copyright and trademark hygiene (see `NOTICE.md`).           |
-| If a figure cannot be cited, leave it out. A body with requirements but no crediting rules is fine (GIAC, Cisco): users apply credits by override.                               | Honesty over completeness.                                   |
-| Released versions are immutable. Fixing a released number means a new `version` block with `effective_from` and a `notes` line saying what changed.                              | Open cycles pin a version; history never rewrites itself.    |
-| Use the canonical activity types in `src/core/domain/activity-types.ts`. If a body has an activity that maps onto none of them, open an issue before inventing a key.            | Fan-out depends on one shared taxonomy.                      |
+| Rule                                                                                                                                                                              | Why                                                          |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Primary sources only: the issuer's policy PDF, handbook, or official program page. Blog posts and training vendors may help you find the primary document; they are never cited.  | Wrong numbers in a rules engine are worse than missing ones. |
+| Every version has at least one `sources[]` entry with `url`, `title`, `retrieved_on`; PDFs also carry `sha256` of the retrieved file. The schema enforces the first three.        | Anyone can re-verify.                                        |
+| Parameters only. No handbook prose. `body_label` is the issuer's short name for an activity.                                                                                      | Copyright and trademark hygiene (see `NOTICE.md`).           |
+| If a figure cannot be cited, leave it out. A body with requirements but no crediting rules is fine (GIAC, Cisco): users apply credits by override.                                | Honesty over completeness.                                   |
+| Released versions are immutable. Fixing a released number means a new `version` block with `effective_from` and a `notes` line saying what changed.                               | Open cycles pin a version; history never rewrites itself.    |
+| Adding a certification to a body that already has a released version: add it with `added_in_version: <n>` and a new version `<n>` that carries the old rules plus the new cert's. | Released versions' lock hashes leave out certs added later.  |
+| Use the canonical activity types in `src/core/domain/activity-types.ts`. If a body has an activity that maps onto none of them, open an issue before inventing a key.             | Fan-out depends on one shared taxonomy.                      |
 
 ## Steps
 

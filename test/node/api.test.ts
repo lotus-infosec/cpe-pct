@@ -327,7 +327,7 @@ describe('dashboard and renewal', () => {
       sequence: 2,
       startsOn: '2028-01-15',
       endsOn: '2031-01-15',
-      ruleVersionId: 'comptia@1',
+      ruleVersionId: 'comptia@2', // the new cycle pins the latest version; the closed one keeps comptia@1
     });
     expect(
       (await call('POST', `/api/cycles/${cycleIds['secplus']}/renew`, { renewedOn: '2026-09-01' }))
