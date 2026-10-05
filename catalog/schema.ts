@@ -140,27 +140,37 @@ export const BodyFile = z
           credit_unit_label: z.string().min(1),
           expires: z.boolean(),
           retired_on: isoDate.optional(),
+          // First version that knows this cert. Earlier versions' lock hashes leave it out, so a body
+          // can gain a certification without changing a released version.
+          added_in_version: z.number().int().positive().optional(),
         }),
       )
       .min(1),
     versions: z.array(Version).min(1),
   })
   .superRefine((f, ctx) => {
-    const certIds = new Set(f.certifications.map((c) => c.id));
     for (const c of f.certifications)
       if (!c.id.startsWith(`${f.body.id}/`))
         ctx.addIssue({
           code: 'custom',
           message: `certification ${c.id} must start with ${f.body.id}/`,
         });
+    const versionNumbers = new Set(f.versions.map((v) => v.version));
+    for (const c of f.certifications)
+      if (c.added_in_version !== undefined && !versionNumbers.has(c.added_in_version))
+        ctx.addIssue({
+          code: 'custom',
+          message: `certification ${c.id}: added_in_version ${c.added_in_version} has no version block`,
+        });
     const seen = new Set<number>();
     for (const v of f.versions) {
       if (seen.has(v.version))
         ctx.addIssue({ code: 'custom', message: `duplicate version ${v.version}` });
       seen.add(v.version);
+      const known = new Set(certificationsIn(f.certifications, v.version).map((c) => c.id));
       const cats = new Set(v.categories.map((c) => c.key));
       for (const r of v.requirements)
-        if (!certIds.has(r.certification))
+        if (!known.has(r.certification))
           ctx.addIssue({
             code: 'custom',
             message: `v${v.version}: unknown certification ${r.certification}`,
@@ -171,27 +181,35 @@ export const BodyFile = z
             code: 'custom',
             message: `v${v.version}: unknown category ${r.category}`,
           });
-        if (r.applies_to && !certIds.has(r.applies_to))
+        if (r.applies_to && !known.has(r.applies_to))
           ctx.addIssue({
             code: 'custom',
             message: `v${v.version}: unknown applies_to ${r.applies_to}`,
           });
       }
       for (const c of v.constraints)
-        if (c.applies_to && !certIds.has(c.applies_to))
+        if (c.applies_to && !known.has(c.applies_to))
           ctx.addIssue({
             code: 'custom',
             message: `v${v.version}: unknown applies_to ${c.applies_to}`,
           });
       // `from` may be another body's certification (e.g. isc2/cissp renews comptia/security-plus); `to` must be ours.
       for (const r of v.relations)
-        if (!certIds.has(r.to))
+        if (!known.has(r.to))
           ctx.addIssue({
             code: 'custom',
             message: `v${v.version}: relation to unknown cert ${r.to}`,
           });
     }
   });
+
+/** The certifications a version knows: those with no added_in_version, or one at or below it. */
+export function certificationsIn<T extends { added_in_version?: number | undefined }>(
+  certifications: T[],
+  version: number,
+): T[] {
+  return certifications.filter((c) => (c.added_in_version ?? 1) <= version);
+}
 
 export type BodyFile = z.infer<typeof BodyFile>;
 export type VersionBlock = z.infer<typeof Version>;

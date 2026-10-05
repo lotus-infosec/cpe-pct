@@ -21,6 +21,14 @@ certifications:
     abbreviation: ECB
     credit_unit_label: CPE
     expires: false # lifetime cert: still listed so it appears on the dashboard
+  # A cert added after version 1 was released names the first version that knows it. Earlier versions
+  # leave it out of their lock hash, so they stay unchanged; the new version carries its rules.
+  # - id: example/cert-c
+  #   name: Example Certification C
+  #   abbreviation: ECC
+  #   credit_unit_label: CPE
+  #   expires: true
+  #   added_in_version: 2
 
 versions:
   - version: 1

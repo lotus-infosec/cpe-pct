@@ -14,6 +14,11 @@
     "migration": "0002_seed_comptia_v1.sql",
     "verified_on": "2026-09-11"
   },
+  "comptia@2": {
+    "hash": "bd42b25b3c707fdc05b86ca42d8d4b881f91e7251b74908e199b18fa061479ef",
+    "migration": "0015_seed_comptia_v2.sql",
+    "verified_on": "2026-10-05"
+  },
   "ec-council@1": {
     "hash": "fe3ad1dca6493151839e8956d07eff389e47376e00e550479b852fed107de4c8",
     "migration": "0006_seed_ec-council_v1.sql",

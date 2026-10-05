@@ -189,3 +189,46 @@ describe('PMI (nested categories) and GIAC / AWS (exam alternatives)', () => {
     expect(a.cycles[0]).toMatchObject({ endsOn: '2027-03-01' });
   });
 });
+
+describe('CompTIA v2: Data+ and Project+', () => {
+  it('new holds pin comptia@2 with 36-month cycles and the published totals', async () => {
+    for (const [certificationId, total] of [
+      ['comptia/data-plus', 2000],
+      ['comptia/project-plus', 3000],
+    ] as const) {
+      const held = (await call('POST', '/api/held', { certificationId, earnedOn: '2025-01-15' }))
+        .json;
+      expect(held.cycles[0]).toMatchObject({
+        ruleVersionId: 'comptia@2',
+        startsOn: '2025-01-15',
+        endsOn: '2028-01-15',
+      });
+      const st = (await call('GET', `/api/cycles/${held.cycles[0].id}/standing`)).json;
+      expect(st.constraints.find((c: any) => c.type === 'cycle_total')).toMatchObject({
+        required: total,
+      });
+    }
+  });
+  it('per-certification caps: a 6-hour webinar earns 4 toward Data+ and 6 toward Project+', async () => {
+    const rows = (await call('GET', '/api/held')).json.rows as any[];
+    const id = (c: string) => rows.find((x) => x.certificationId === c).id;
+    const s = await fanout({ activityType: 'attend_webinar', durationMinutes: 360 });
+    expect(s.find((x) => x.heldCertId === id('comptia/data-plus'))).toMatchObject({
+      creditsX100: 400,
+      warnings: expect.arrayContaining(['clamped_cycle_cap']),
+    });
+    expect(s.find((x) => x.heldCertId === id('comptia/project-plus'))).toMatchObject({
+      creditsX100: 600,
+    });
+  });
+  it('a higher CompTIA cert does not cover the Project+ fee (Project+ is outside the hierarchy)', async () => {
+    await hold('comptia/cysa-plus');
+    const held = (await call('GET', '/api/held')).json.rows.find(
+      (x: any) => x.certificationId === 'comptia/project-plus',
+    );
+    const st = (await call('GET', `/api/cycles/${held.cycles[0].id}/standing`)).json;
+    expect(st.constraints.find((c: any) => c.type === 'fee_paid')).toMatchObject({
+      satisfied: false,
+    });
+  });
+});

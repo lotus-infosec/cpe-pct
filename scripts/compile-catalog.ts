@@ -12,7 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parse } from 'yaml';
-import { BodyFile, type VersionBlock } from '../catalog/schema';
+import { BodyFile, certificationsIn, type VersionBlock } from '../catalog/schema';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const BODIES = path.join(ROOT, 'catalog/bodies');
@@ -69,7 +69,11 @@ for (const file of files) {
   for (const v of body.versions) {
     const key = `${body.body.id}@${v.version}`;
     const hash = sha(
-      canonical({ body: body.body, certifications: body.certifications, version: v }),
+      canonical({
+        body: body.body,
+        certifications: certificationsIn(body.certifications, v.version),
+        version: v,
+      }),
     );
     const released = lock[key];
     if (released && released.hash !== hash) {
@@ -125,7 +129,7 @@ function seedSql(body: BodyFile, v: VersionBlock, rv: string): string {
     ['id', 'name', 'website', 'fee_scope'],
     [b.id, b.name, b.website ?? null, b.fee_scope],
   );
-  for (const c of body.certifications)
+  for (const c of certificationsIn(body.certifications, v.version))
     ins(
       'certifications',
       ['id', 'body_id', 'name', 'abbreviation', 'credit_unit_label', 'expires', 'retired_on'],
